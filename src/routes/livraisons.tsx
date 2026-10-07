@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 
 type Tab = "planning" | "liste" | "encaissements" | "livreurs";
 export const Route = createFileRoute("/livraisons")({
-  validateSearch: (s: Record<string, unknown>) => ({ onglet: (s.onglet as Tab) || undefined }),
+  validateSearch: (s: Record<string, unknown>): { onglet?: Tab } => ({ onglet: (s.onglet as Tab) || undefined }),
   head: () => ({ meta: [{ title: "Livraisons — Belle Image" }, { name: "description", content: "Planning, tournées et encaissements à la livraison." }, { property: "og:title", content: "Livraisons — Belle Image" }, { property: "og:description", content: "Livraisons et paiement à la livraison." }] }),
   component: Deliveries,
 });

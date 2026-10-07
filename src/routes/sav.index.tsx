@@ -15,7 +15,7 @@ import { ClientLink } from "@/components/bi/drawers";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/sav/")({
-  validateSearch: (s: Record<string, unknown>) => ({ nouveau: s.nouveau as string | undefined, commande: s.commande as string | undefined }),
+  validateSearch: (s: Record<string, unknown>): { nouveau?: string; commande?: string } => ({ nouveau: s.nouveau as string | undefined, commande: s.commande as string | undefined }),
   head: () => ({ meta: [{ title: "Réclamations SAV — Belle Image" }, { name: "description", content: "Tickets SAV, garanties et interventions." }, { property: "og:title", content: "Réclamations SAV — Belle Image" }, { property: "og:description", content: "Service après-vente Belle Image." }] }),
   component: Sav,
 });

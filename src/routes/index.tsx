@@ -133,7 +133,7 @@ function Dashboard() {
           <h3 className="mb-3 font-display text-lg font-semibold">Actions requises</h3>
           {actions.length === 0 ? <p className="text-sm text-muted-foreground">Tout est à jour 🎉</p> : (
             <div className="grid gap-2 sm:grid-cols-2">{actions.map((a) => (
-              <Link key={a.t} to={a.to} search={a.s} className="flex items-center gap-3 rounded-xl border p-3 hover:bg-accent/50">
+              <Link key={a.t} to={a.to as "/"} search={a.s as never} className="flex items-center gap-3 rounded-xl border p-3 hover:bg-accent/50">
                 <span className="flex h-8 min-w-8 items-center justify-center rounded-full bg-accent px-2 font-display font-semibold text-accent-foreground tnum animate-breathe">{a.n}</span>
                 <span className="flex-1 text-sm">{a.t}</span><ChevronRight className="h-4 w-4 text-muted-foreground" />
               </Link>))}

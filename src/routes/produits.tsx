@@ -18,7 +18,7 @@ import { useDrawers } from "@/components/bi/drawers";
 
 type Tab = "catalogue" | "import" | "historique" | "categories";
 export const Route = createFileRoute("/produits")({
-  validateSearch: (s: Record<string, unknown>) => ({ onglet: (s.onglet as Tab) || undefined, produit: s.produit as string | undefined }),
+  validateSearch: (s: Record<string, unknown>): { onglet?: Tab; produit?: string } => ({ onglet: (s.onglet as Tab) || undefined, produit: s.produit as string | undefined }),
   head: () => ({ meta: [{ title: "Produits & Prix — Belle Image" }, { name: "description", content: "Catalogue, import Excel des prix et historique." }, { property: "og:title", content: "Produits & Prix — Belle Image" }, { property: "og:description", content: "Gestion du catalogue et des prix." }] }),
   component: Products,
 });
@@ -164,7 +164,7 @@ function analyse(db: DB, raw: Record<string, unknown>[], map: Record<string, str
     if (n <= 0) return { ...row, state: "Erreur", msg: "Prix négatif ou nul" };
     row.price = n;
     const pp = g(r, "Prix promo TTC (optionnel)");
-    if (pp !== undefined && pp !== "") {
+    if (pp != null && pp !== "") {
       const s = toDate(g(r, "Début promo")), e = toDate(g(r, "Fin promo"));
       if (!s || !e) return { ...row, state: "Erreur", msg: "Promo sans dates" };
       if (e < s) return { ...row, state: "Erreur", msg: "Fin avant début" };

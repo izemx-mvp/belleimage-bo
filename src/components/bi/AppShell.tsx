@@ -118,7 +118,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <button onClick={() => setCmd(true)} className="hidden items-center gap-2 rounded-full border bg-card px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground lg:flex">
               <Search className="h-4 w-4" />Rechercher<kbd className="ml-4 rounded border px-1 text-[10px]">Ctrl K</kbd>
             </button>
-            <Button size="sm" onClick={() => nav({ to: "/commandes", search: { nouveau: "1", statut: undefined } })}><Plus className="h-4 w-4" /><span className="hidden sm:inline">Nouvelle commande</span></Button>
+            <Button size="sm" onClick={() => nav({ to: "/commandes", search: { nouveau: "1" } })}><Plus className="h-4 w-4" /><span className="hidden sm:inline">Nouvelle commande</span></Button>
             <AgentsPopover />
             <Popover onOpenChange={(o) => { if (!o && unread) readAllNotifs(); }}>
               <PopoverTrigger className="relative rounded-full p-2 hover:bg-accent" aria-label="Notifications">

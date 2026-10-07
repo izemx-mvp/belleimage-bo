@@ -15,7 +15,7 @@ import { PageHeader, Tabs, Card, Pill } from "@/components/bi/ui";
 
 type Tab = "faq" | "documents" | "infos" | "regles";
 export const Route = createFileRoute("/base-de-connaissance")({
-  validateSearch: (s: Record<string, unknown>) => ({ onglet: (s.onglet as Tab) || undefined }),
+  validateSearch: (s: Record<string, unknown>): { onglet?: Tab } => ({ onglet: (s.onglet as Tab) || undefined }),
   head: () => ({ meta: [{ title: "Base de connaissance — Belle Image" }, { name: "description", content: "FAQ, documents, infos et règles des agents IA." }, { property: "og:title", content: "Base de connaissance — Belle Image" }, { property: "og:description", content: "Source de vérité des agents IA." }] }),
   component: KB,
 });
