@@ -117,6 +117,32 @@ function addMsgToClientTranscript(d: DB, clientId: string, msg: Msg, orderId?: s
   t.messages.push(msg);
 }
 
+export function migrateCatalogue(persisted: unknown) {
+  const state = persisted as { db?: DB; session?: State["session"] };
+  if (!state.db) return { db: buildSeed(), session: state.session ?? null };
+  const db = structuredClone(state.db);
+  const fresh = buildSeed();
+  const mapping = new Map(db.products.map((old, i) => {
+    const category = fresh.products.filter((p) => p.sub === old.sub);
+    const product = fresh.products.find((p) => p.ref === old.ref) ?? category[i % category.length] ?? fresh.products[0];
+    return [old.id, product];
+  }));
+  db.orders.forEach((o) => o.lines.forEach((line) => {
+    const p = mapping.get(line.productId);
+    if (p) { line.productId = p.id; line.name = p.name; }
+  }));
+  [db.tickets, db.priceHistory, db.movements].forEach((rows) => rows.forEach((row) => {
+    const p = mapping.get(row.productId); if (p) row.productId = p.id;
+  }));
+  db.imports.forEach((batch) => batch.changes.forEach((row) => {
+    const p = mapping.get(row.productId); if (p) row.productId = p.id;
+  }));
+  db.products = fresh.products; db.brands = fresh.brands; db.subs = fresh.subs;
+  db.settings = { ...db.settings, lowRatingTicket: true, demoEvents: false };
+  const sanitized = JSON.parse(JSON.stringify(db).replace(/Agent Catalogue/g, "Équipe commerciale").replace(/Agent SAV/g, "Équipe SAV").replace(/Agent Admin Prix/g, "Administration").replace(/WhatsApp Agent/g, "WhatsApp").replace(/Agent IA/g, "Belle Image").replace(/\"agent\"/g, '\"team\"')) as DB;
+  return { db: sanitized, session: state.session ?? null };
+}
+
 export const useStore = create<State>()(
   persist(
     (set, get) => {
@@ -418,7 +444,7 @@ export const useStore = create<State>()(
 
       };
     },
-    { name: "belle-image-db", version: 1, storage: createJSONStorage(() => localStorage), partialize: (s) => ({ db: s.db, session: s.session }), skipHydration: true },
+    { name: "belle-image-db", version: 2, migrate: (persisted) => migrateCatalogue(persisted), storage: createJSONStorage(() => localStorage), partialize: (s) => ({ db: s.db, session: s.session }), skipHydration: true },
   ),
 );
 

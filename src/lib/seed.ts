@@ -1,3 +1,4 @@
+import { CLIENT_CATALOGUE } from "./catalogue";
 import type {
   Product, Client, Order, Delivery, Payment, Driver, Zone, Ticket, PriceChange, StockMove, Activity, Notif,
   Transcript, ImportBatch, Review, Faq, Doc, Template, Sub, OrderStatus, Slot,
@@ -20,77 +21,9 @@ export const SUBS: { cat: "Électroménager" | "Ameublement"; sub: Sub; slug: st
   { cat: "Ameublement", sub: "Rangement", slug: "/boutique/rangement" },
 ];
 
-export const BRANDS: { name: string; warranty: number }[] = [
-  { name: "Samsung", warranty: 24 }, { name: "LG", warranty: 24 }, { name: "Beko", warranty: 24 }, { name: "Haier", warranty: 24 },
-  { name: "Condor", warranty: 12 }, { name: "Hisense", warranty: 24 }, { name: "Bosch", warranty: 24 }, { name: "Arçelik", warranty: 24 },
-];
-
-// ref, name, brand, sub, price
-const P: [string, string, string, Sub, number][] = [
-  ["SAM-RT38-INOX", "Réfrigérateur Samsung RT38 Inox 380 L", "Samsung", "Réfrigérateurs", 5990],
-  ["LG-GN-B422", "Réfrigérateur LG No Frost 420 L", "LG", "Réfrigérateurs", 6890],
-  ["BEK-RDNE455", "Réfrigérateur Beko 455 L", "Beko", "Réfrigérateurs", 5290],
-  ["HAI-HRF-520", "Réfrigérateur américain Haier 520 L", "Haier", "Réfrigérateurs", 11900],
-  ["CON-CRF-T36", "Réfrigérateur Condor 360 L", "Condor", "Réfrigérateurs", 3990],
-  ["HIS-RT-267", "Réfrigérateur Hisense 267 L", "Hisense", "Réfrigérateurs", 3290],
-  ["BOS-KGN39", "Réfrigérateur combiné Bosch Serie 4", "Bosch", "Réfrigérateurs", 8490],
-  ["BEK-WMB71643", "Machine à laver Beko 7 kg", "Beko", "Lave-linge", 3490],
-  ["SAM-WW90T", "Machine à laver Samsung 9 kg EcoBubble", "Samsung", "Lave-linge", 5790],
-  ["LG-F4V5", "Machine à laver LG 8 kg AI DD", "LG", "Lave-linge", 5290],
-  ["BOS-WAN28", "Machine à laver Bosch Serie 4 8 kg", "Bosch", "Lave-linge", 5990],
-  ["CON-WM-610", "Machine à laver Condor 6 kg", "Condor", "Lave-linge", 2690],
-  ["ARC-WM-9", "Lave-linge Arçelik 9 kg", "Arçelik", "Lave-linge", 4690],
-  ["BOS-HBF113", "Four encastrable Bosch 66 L", "Bosch", "Cuisson", 3790],
-  ["BEK-FSE6", "Cuisinière Beko 4 feux 60 cm", "Beko", "Cuisson", 3190],
-  ["ARC-CK90", "Cuisinière Arçelik 5 feux 90 cm", "Arçelik", "Cuisson", 5490],
-  ["SAM-MS23", "Micro-ondes Samsung 23 L", "Samsung", "Cuisson", 1190],
-  ["LG-MH6535", "Micro-ondes grill LG 25 L", "LG", "Cuisson", 1390],
-  ["CON-PLQ-4", "Plaque de cuisson Condor 4 feux", "Condor", "Cuisson", 1490],
-  ["LG-OLED55-C3", "TV LG OLED 55\" C3 4K", "LG", "TV & image", 6490],
-  ["SAM-QE65Q70", "TV Samsung QLED 65\" Q70", "Samsung", "TV & image", 9990],
-  ["HIS-50A6", "TV Hisense 50\" 4K Smart", "Hisense", "TV & image", 3490],
-  ["SAM-UE43", "TV Samsung 43\" Crystal UHD", "Samsung", "TV & image", 3290],
-  ["LG-SN5Y", "Barre de son LG SN5Y", "LG", "TV & image", 1990],
-  ["CON-TV32", "TV Condor 32\" HD", "Condor", "TV & image", 1590],
-  ["HIS-AS12", "Climatiseur split Hisense 12 000 BTU", "Hisense", "Climatisation", 4290],
-  ["LG-DUAL18", "Climatiseur LG Dual Inverter 18 000 BTU", "LG", "Climatisation", 7490],
-  ["SAM-WIND9", "Climatiseur Samsung WindFree 9 000 BTU", "Samsung", "Climatisation", 5690],
-  ["HAI-FLX12", "Climatiseur Haier Flexis 12 000 BTU", "Haier", "Climatisation", 4990],
-  ["CON-CL24", "Climatiseur Condor 24 000 BTU", "Condor", "Climatisation", 6990],
-  ["BOS-MMB64", "Mixeur Bosch VitaPower", "Bosch", "Petit électroménager", 390],
-  ["BOS-MUM5", "Robot pâtissier Bosch MUM5", "Bosch", "Petit électroménager", 2490],
-  ["ARC-AF4", "Friteuse sans huile Arçelik 4 L", "Arçelik", "Petit électroménager", 990],
-  ["SAM-VS15", "Aspirateur balai Samsung Jet", "Samsung", "Petit électroménager", 2990],
-  ["BEK-SIM3", "Fer à repasser vapeur Beko", "Beko", "Petit électroménager", 290],
-  ["HAI-KET17", "Bouilloire Haier 1,7 L", "Haier", "Petit électroménager", 249],
-  ["CON-CAF12", "Cafetière Condor 12 tasses", "Condor", "Petit électroménager", 349],
-  ["SAL-ANGLE-NOV", "Salon d'angle Nova 6 places", "Arçelik", "Salons", 9900],
-  ["SAL-MAR-7P", "Salon marocain Fès 7 places", "Condor", "Salons", 12500],
-  ["SAL-CAN3-VEL", "Canapé 3 places velours", "Haier", "Salons", 4900],
-  ["SAL-FAUT-RLX", "Fauteuil relax Tanger", "Beko", "Salons", 2400],
-  ["SAL-TBL-BAS", "Table basse marbre & chêne", "Condor", "Salons", 1600],
-  ["SAL-MEUB-TV", "Meuble TV Rabat 180 cm", "Condor", "Salons", 2200],
-  ["CHB-LIT160", "Lit 160 cm avec sommier", "Condor", "Chambres", 4500],
-  ["CHB-ADULT-LUX", "Chambre adulte complète Luxe", "Arçelik", "Chambres", 15900],
-  ["CHB-ENF-90", "Chambre enfant 90 cm", "Beko", "Chambres", 6900],
-  ["CHB-MATELAS160", "Matelas orthopédique 160×200", "Haier", "Chambres", 3200],
-  ["CHB-COMMODE", "Commode 6 tiroirs", "Condor", "Chambres", 1900],
-  ["CHB-CHEVET", "Table de chevet (paire)", "Condor", "Chambres", 990],
-  ["SAM-SALLE-6C", "Salle à manger 6 chaises", "Arçelik", "Salles à manger", 7800],
-  ["SAM-SALLE-8C", "Salle à manger 8 chaises Prestige", "Arçelik", "Salles à manger", 11400],
-  ["SAM-TABLE-EXT", "Table extensible chêne", "Condor", "Salles à manger", 3900],
-  ["SAM-CHAISE-4", "Lot de 4 chaises velours", "Beko", "Salles à manger", 2400],
-  ["SAM-BUFFET", "Buffet bas 3 portes", "Condor", "Salles à manger", 3600],
-  ["RAN-ARM3P", "Armoire 3 portes miroir", "Condor", "Rangement", 4200],
-  ["RAN-ARM2P", "Armoire 2 portes", "Condor", "Rangement", 2900],
-  ["RAN-DRESS", "Dressing modulable 240 cm", "Arçelik", "Rangement", 6400],
-  ["RAN-BIBLIO", "Bibliothèque 5 niveaux", "Beko", "Rangement", 1400],
-  ["RAN-CHAUSS", "Meuble à chaussures", "Condor", "Rangement", 890],
-  ["RAN-VITRINE", "Vitrine vaisselier", "Haier", "Rangement", 3100],
-];
-
-export const LOW_IDX = [4, 22, 34, 47, 58]; // stock bas
-export const OUT_IDX = [15, 41]; // rupture
+export const BRANDS = [...new Set(CLIENT_CATALOGUE.map((p) => p.brand))].map((name) => ({ name, warranty: 24 }));
+export const LOW_IDX = CLIENT_CATALOGUE.flatMap((p, i) => p.stock > 0 && p.stock <= p.threshold ? [i] : []);
+export const OUT_IDX = CLIENT_CATALOGUE.flatMap((p, i) => p.stock === 0 ? [i] : []);
 
 const CLIENTS: [string, string, string, string][] = [
   ["Karim Benali", "Kénitra", "Maamora", "Rue 12, Imm. 4"], ["Sara Amrani", "Kénitra", "Val Fleuri", "Av. Mohammed V, n°88"],
@@ -136,24 +69,7 @@ export function buildSeed(now = Date.now()) {
   const at = (days: number, h = 10, m = 0) => { const d = new Date(T - days * DAY); d.setHours(h, m, 0, 0); return iso(d.getTime()); };
   const dateOnly = (days: number) => dayKey(T - days * DAY + 12 * 3600000 - 10 * 3600000);
 
-  const products: Product[] = P.map(([ref, name, brand, sub, price], i) => {
-    const cat = SUBS.find((s) => s.sub === sub)!.cat;
-    const w = BRANDS.find((b) => b.name === brand)!.warranty;
-    const stock = OUT_IDX.includes(i) ? 0 : LOW_IDX.includes(i) ? 2 : 6 + ((i * 7) % 14);
-    return {
-      id: `p${i + 1}`, ref, name, nameAr: AR_NAMES[sub], brand, category: cat, sub, price,
-      stock, threshold: LOW_IDX.includes(i) ? 3 : 3, location: i % 3 === 0 ? "Dépôt" : "Magasin",
-      status: i === 59 ? "Brouillon" : i === 57 ? "Archivé" : "Actif",
-      warrantyMonths: cat === "Ameublement" ? 12 : w,
-      description: `${name} — garantie constructeur, livraison à domicile, paiement à la livraison.`,
-      purchasePrice: Math.round(price * 0.78), deliveryDays: cat === "Ameublement" ? 5 : 2,
-    };
-  });
-  // promos: 6 (2 ending soon)
-  const promo = (i: number, pct: number, s: number, e: number) => {
-    products[i].promo = { price: Math.round((products[i].price * (1 - pct)) / 10) * 10, start: dateOnly(s), end: dateOnly(-e) };
-  };
-  promo(7, 0.1, 10, 2); promo(13, 0.12, 5, 20); promo(25, 0.08, 3, 3); promo(37, 0.15, 8, 25); promo(49, 0.1, 2, 15); promo(30, 0.2, 1, 10);
+  const products: Product[] = structuredClone(CLIENT_CATALOGUE);
 
   const clients: Client[] = CLIENTS.map(([name, city, quartier, address], i) => ({
     id: `c${i + 1}`, name, city, quartier, address,
@@ -164,7 +80,7 @@ export function buildSeed(now = Date.now()) {
 
   const orders: Order[] = []; const deliveries: Delivery[] = []; const payments: Payment[] = [];
   const movements: StockMove[] = [];
-  const normalIdx = products.map((_, i) => i).filter((i) => !LOW_IDX.includes(i) && !OUT_IDX.includes(i) && i < 57);
+  const normalIdx = products.map((_, i) => i).filter((i) => !LOW_IDX.includes(i) && !OUT_IDX.includes(i));
   // plan: [status, daysAgo, deliveryInfo]
   type Plan = { s: OrderStatus; d: number; del?: { day: number; slot: Slot; drv: string; st: Delivery["status"]; pay?: "Encaissé" | "Écart" | "Reversé" | "À encaisser" } };
   const plans: Plan[] = [];
@@ -237,8 +153,8 @@ export function buildSeed(now = Date.now()) {
 
   const transcripts: Transcript[] = [
     { id: "t1", title: "Demande de commande — Réfrigérateur", clientName: clients[0].name, phone: clients[0].phone, messages: [
-      { from: "client", text: "Salam, chhal taman dyal frigo Samsung RT38 ?", at: at(0, 9, 12) },
-      { from: "team", text: "Bonjour Karim 👋 Le réfrigérateur Samsung RT38 Inox 380 L est à 5 990,00 DH TTC, disponible en magasin. Livraison à domicile, paiement à la livraison uniquement.", at: at(0, 9, 12) },
+      { from: "client", text: "Salam, chhal taman dyal frigo combiné ?", at: at(0, 9, 12) },
+      { from: "team", text: "Bonjour Karim 👋 Consultez notre catalogue pour les prix et disponibilités des réfrigérateurs. Livraison à domicile, paiement à la livraison uniquement.", at: at(0, 9, 12) },
       { from: "client", text: "Mezyan, bghit ncommandih. Livraison l Maamora ?", at: at(0, 9, 14) },
       { from: "team", text: "Avec plaisir. Maamora est en zone périphérie. J'ai préparé votre demande de commande, un conseiller Belle Image va la confirmer. Pouvez-vous m'indiquer votre adresse exacte ?", at: at(0, 9, 14), buttons: ["Envoyer ma position", "Parler à un conseiller"] },
     ] },
@@ -249,10 +165,10 @@ export function buildSeed(now = Date.now()) {
       { from: "team", text: "Merci. Produit livré récemment, il est sous garantie ✓. J'ai créé le ticket et un responsable SAV vous contactera sous 24 h.", at: at(1, 18, 6) },
     ] },
     { id: "t3", title: "Admin — modification de prix", clientName: "Salma Berrada (admin)", phone: "+212 6 61 00 00 01", messages: [
-      { from: "admin", text: "Passe la TV LG 55 pouces à 5 990 DH", at: at(3, 11, 0) },
-      { from: "team", text: "TV LG OLED 55\" C3 4K (LG-OLED55-C3) : 6 490,00 DH → 5 990,00 DH (−7,7 %). Confirmez-vous ? Répondez OUI dans les 5 minutes.", at: at(3, 11, 0), buttons: ["OUI", "NON"] },
+      { from: "admin", text: "Peux-tu vérifier le prix de la TV 55 pouces ?", at: at(3, 11, 0) },
+      { from: "team", text: "Le tarif du catalogue doit être vérifié avant toute modification.", at: at(3, 11, 0), buttons: ["OUI", "NON"] },
       { from: "admin", text: "OUI", at: at(3, 11, 1) },
-      { from: "team", text: "✓ Prix appliqué. Historique mis à jour, modification annulable depuis le back-office.", at: at(3, 11, 1) },
+      { from: "team", text: "Demande reçue. Aucun prix modifié.", at: at(3, 11, 1) },
     ] },
   ];
 
@@ -279,27 +195,7 @@ export function buildSeed(now = Date.now()) {
   });
 
   const priceHistory: PriceChange[] = [];
-  const ph = (i: number, old: number, nw: number, origin: PriceChange["origin"], author: string, d: number, extra: Partial<PriceChange> = {}) =>
-    priceHistory.push({ id: uid("h"), productId: products[i].id, old, new: nw, origin, author, at: at(d, 11), ...extra });
-  ph(19, 6490, 5990, "WhatsApp Admin", "+212 6 61 00 00 01", 3, { transcriptId: "t3" });
-  products[19].price = 5990;
-  ph(0, 6290, 5990, "Import Excel", "Salma Berrada", 4, { batchId: "b1" });
-  ph(1, 6590, 6890, "Import Excel", "Salma Berrada", 4, { batchId: "b1" });
-  ph(8, 5990, 5790, "Import Excel", "Salma Berrada", 4, { batchId: "b1" });
-  ph(20, 10490, 9990, "Manuel", "Nabil", 5);
-  ph(26, 7290, 7490, "Manuel", "Salma Berrada", 2);
-  ph(37, 10500, 9900, "WhatsApp Admin", "+212 6 61 00 00 01", 1);
-  ph(43, 4700, 4500, "Manuel", "Nabil", 6);
-  ph(49, 7900, 7800, "Import Excel", "Salma Berrada", 4, { batchId: "b1" });
-  ph(13, 3890, 3790, "Manuel", "Salma Berrada", 12);
-  ph(31, 2590, 2490, "Import Excel", "Salma Berrada", 18, { batchId: "b0" });
-  ph(54, 4400, 4200, "Fin de promo", "Système", 20);
-
-  const imports: ImportBatch[] = [
-    { id: "b1", file: "prix-octobre.xlsx", at: at(4, 11), author: "Salma Berrada", applied: 4, ignored: 2, errors: 1,
-      changes: [{ productId: "p1", old: 6290, new: 5990 }, { productId: "p2", old: 6590, new: 6890 }, { productId: "p9", old: 5990, new: 5790 }, { productId: "p50", old: 7900, new: 7800 }], undone: false },
-    { id: "b0", file: "maj-petit-electro.xlsx", at: at(18, 11), author: "Salma Berrada", applied: 1, ignored: 0, errors: 0, changes: [{ productId: "p32", old: 2590, new: 2490 }], undone: false },
-  ];
+  const imports: ImportBatch[] = [];
 
   const reviews: Review[] = deliveredOrders.slice(0, 8).map((o, i) => ({
     id: `r${i + 1}`, clientId: o.clientId, orderId: o.id, rating: [5, 4, 5, 4, 2, 5, 4, 5][i],
@@ -311,8 +207,8 @@ export function buildSeed(now = Date.now()) {
     { id: uid("a"), at: at(1, 18, 6), actor: "Équipe SAV", kind: "SAV", text: "Réclamation SAV-0001 créée par l'Équipe SAV." },
     { id: uid("a"), at: at(1, 19), actor: "Youssef", kind: "Livraisons", text: "Livraison encaissée en espèces." },
     { id: uid("a"), at: at(2, 11), actor: "Salma", kind: "Stock", text: "Ajustement de stock : casse en dépôt." },
-    { id: uid("a"), at: at(3, 11, 1), actor: "Administration", kind: "Prix", text: "Administration a modifié le prix de TV LG OLED 55\" C3 : 6 490 → 5 990 DH." },
-    { id: uid("a"), at: at(4, 11), actor: "Salma", kind: "Import", text: "Import Excel « prix-octobre.xlsx » : 4 prix mis à jour." },
+    { id: uid("a"), at: at(3, 11, 1), actor: "Administration", kind: "Prix", text: "Administration a consulté le catalogue." },
+    { id: uid("a"), at: at(4, 11), actor: "Salma", kind: "Import", text: "Catalogue du magasin consulté." },
   ];
   const notifications: Notif[] = [
     { id: uid("n"), at: at(0, 9, 15), text: `Nouvelle commande ${orders[0].num} créée par l'Équipe commerciale — adresse manquante`, read: false, level: "info", link: `/commandes/${orders[0].id}` },
