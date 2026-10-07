@@ -18,7 +18,7 @@ import { ClientLink } from "@/components/bi/drawers";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/commandes/")({
-  validateSearch: (s: Record<string, unknown>) => ({ nouveau: s.nouveau as string | undefined, statut: s.statut as string | undefined }),
+  validateSearch: (s: Record<string, unknown>): { nouveau?: string; statut?: string } => ({ nouveau: s.nouveau as string | undefined, statut: s.statut as string | undefined }),
   head: () => ({ meta: [
     { title: "Commandes — Belle Image" }, { name: "description", content: "Toutes les commandes Belle Image : magasin, téléphone et WhatsApp." },
     { property: "og:title", content: "Commandes — Belle Image" }, { property: "og:description", content: "Suivi des commandes et confirmations." },

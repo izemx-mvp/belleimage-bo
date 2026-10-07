@@ -115,8 +115,8 @@ function ClientSheet({ id, onClose }: { id: string | null; onClose: () => void }
                 <Textarea dir="auto" value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="Votre message…" />
                 <div className="flex flex-wrap gap-2">
                   <Button disabled={!msg.trim()} onClick={() => { send(c.id, msg.trim()); setMsg(""); toast.success(`Message WhatsApp envoyé à ${c.name}`); }}><MessageCircle className="h-4 w-4" />Envoyer</Button>
-                  <Button variant="outline" asChild><Link to="/commandes" search={{ nouveau: c.id }} onClick={onClose}><Plus className="h-4 w-4" />Nouvelle commande</Link></Button>
-                  <Button variant="outline" asChild><Link to="/sav" search={{ nouveau: c.id }} onClick={onClose}><ShieldAlert className="h-4 w-4" />Créer une réclamation</Link></Button>
+                  <Button variant="outline" asChild><Link to="/commandes" search={{ nouveau: c.id, statut: undefined }} onClick={onClose}><Plus className="h-4 w-4" />Nouvelle commande</Link></Button>
+                  <Button variant="outline" asChild><Link to="/sav" search={{ nouveau: c.id, commande: undefined }} onClick={onClose}><ShieldAlert className="h-4 w-4" />Créer une réclamation</Link></Button>
                 </div>
               </section>
             </div>
