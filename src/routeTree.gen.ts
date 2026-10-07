@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ProduitsRouteImport } from './routes/produits'
 import { Route as CommandesIndexRouteImport } from './routes/commandes.index'
 import { Route as CommandesIdRouteImport } from './routes/commandes.$id'
 
@@ -22,6 +23,11 @@ const IndexRoute = IndexRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProduitsRoute = ProduitsRouteImport.update({
+  id: '/produits',
+  path: '/produits',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CommandesIndexRoute = CommandesIndexRouteImport.update({
@@ -38,12 +44,14 @@ const CommandesIdRoute = CommandesIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/produits': typeof ProduitsRoute
   '/commandes/$id': typeof CommandesIdRoute
   '/commandes/': typeof CommandesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/produits': typeof ProduitsRoute
   '/commandes/$id': typeof CommandesIdRoute
   '/commandes': typeof CommandesIndexRoute
 }
@@ -51,20 +59,23 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/produits': typeof ProduitsRoute
   '/commandes/$id': typeof CommandesIdRoute
   '/commandes/': typeof CommandesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/commandes/$id' | '/commandes/'
+  fullPaths: '/' | '/login' | '/produits' | '/commandes/$id' | '/commandes/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/commandes/$id' | '/commandes'
-  id: '__root__' | '/' | '/login' | '/commandes/$id' | '/commandes/'
+  to: '/' | '/login' | '/produits' | '/commandes/$id' | '/commandes'
+  id:
+    '__root__' | '/' | '/login' | '/produits' | '/commandes/$id' | '/commandes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
+  ProduitsRoute: typeof ProduitsRoute
   CommandesIdRoute: typeof CommandesIdRoute
   CommandesIndexRoute: typeof CommandesIndexRoute
 }
@@ -83,6 +94,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/produits': {
+      id: '/produits'
+      path: '/produits'
+      fullPath: '/produits'
+      preLoaderRoute: typeof ProduitsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/commandes/': {
@@ -105,6 +123,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
+  ProduitsRoute: ProduitsRoute,
   CommandesIdRoute: CommandesIdRoute,
   CommandesIndexRoute: CommandesIndexRoute,
 }
