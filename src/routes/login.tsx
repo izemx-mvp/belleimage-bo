@@ -11,7 +11,7 @@ import { Logo } from "@/components/bi/ui";
 import { ShowroomScene } from "@/components/bi/backgrounds";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [
+  head: () => ({ meta: [{ property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }, 
     { title: "Connexion — Belle Image Back-office" }, { name: "description", content: "Connectez-vous au back-office Belle Image." },
     { property: "og:title", content: "Connexion — Belle Image" }, { property: "og:description", content: "Accès équipe Belle Image." },
   ] }),
@@ -36,7 +36,7 @@ function Login() {
         <div className="relative z-10 flex h-full flex-col justify-between p-10">
           <Logo />
           <div className="max-w-xl">
-            <h1 className="font-display text-5xl font-semibold leading-tight text-ink-foreground drop-shadow">Vos commandes, votre stock, vos livraisons — pilotés par l'IA.</h1>
+            <h1 className="font-display text-5xl font-semibold leading-tight text-ink-foreground drop-shadow">Vos commandes, votre stock, vos livraisons.</h1>
             <p className="mt-4 text-lg text-ink-foreground/80">Un seul back-office pour vendre, livrer, encaisser et servir vos clients sur WhatsApp.</p>
             <div className="relative mt-8 flex justify-between">
               <div className="absolute left-2 right-2 top-2 h-px bg-ink-foreground/30" />

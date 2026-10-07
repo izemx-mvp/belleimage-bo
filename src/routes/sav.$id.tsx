@@ -10,11 +10,11 @@ import { useStore, warrantyOf, TICKET_FLOW } from "@/lib/store";
 import type { TicketStatus } from "@/lib/types";
 import { dateFr, dateTimeFr } from "@/lib/format";
 import { simplePdf } from "@/lib/pdf";
-import { Card, StatusBadge, AgentBadge, Pill } from "@/components/bi/ui";
+import { Card, StatusBadge, SourceBadge, Pill } from "@/components/bi/ui";
 import { ClientLink, Bubbles } from "@/components/bi/drawers";
 
 export const Route = createFileRoute("/sav/$id")({
-  head: () => ({ meta: [{ title: "Fiche réclamation — Belle Image" }, { name: "description", content: "Détail d'une réclamation SAV." }, { property: "og:title", content: "Fiche réclamation — Belle Image" }, { property: "og:description", content: "Ticket SAV." }] }),
+  head: () => ({ meta: [{ property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }, { title: "Fiche réclamation — Belle Image" }, { name: "description", content: "Détail d'une réclamation SAV." }, { property: "og:title", content: "Fiche réclamation — Belle Image" }, { property: "og:description", content: "Ticket SAV." }] }),
   component: TicketPage,
 });
 const TECHS = ["Rachid (technicien)", "Karim (technicien)", "Atelier Samsung agréé", "Atelier LG agréé"];
@@ -37,10 +37,10 @@ function TicketPage() {
   return (
     <div className="space-y-6">
       <Link to="/sav" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" />Réclamations</Link>
-      <div className="flex flex-wrap items-center gap-2"><h1 className="font-display text-4xl font-semibold">{t.num}</h1><StatusBadge s={t.status} />{t.source.includes("Agent") && <AgentBadge agent="Agent SAV" />}{t.humanInCharge && <Pill tone="ink"><Hand className="h-3 w-3" />Humain en charge</Pill>}</div>
+      <div className="flex flex-wrap items-center gap-2"><h1 className="font-display text-4xl font-semibold">{t.num}</h1><StatusBadge s={t.status} />{t.source.includes("Agent") && <SourceBadge source="Équipe SAV" />}{t.humanInCharge && <Pill tone="ink"><Hand className="h-3 w-3" />Humain en charge</Pill>}</div>
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
         <div className="space-y-6">
-          <Card className="border-brand/20 bg-accent/30"><div className="mb-1 text-xs font-bold uppercase text-brand">Résumé IA</div><p>{t.summary}</p></Card>
+          <Card className="border-brand/20 bg-accent/30"><div className="mb-1 text-xs font-bold uppercase text-brand">Résumé</div><p>{t.summary}</p></Card>
           <Card>
             <div className="grid gap-3 text-sm sm:grid-cols-2">
               <div><div className="text-xs text-muted-foreground">Client</div><ClientLink id={c.id} /></div>
@@ -53,7 +53,7 @@ function TicketPage() {
             <p className="mt-4 text-sm">{t.description}</p>
           </Card>
           <Card>
-            <div className="mb-3 flex items-center justify-between"><h3 className="font-display text-lg font-semibold">Conversation WhatsApp</h3>{!t.humanInCharge && <Button size="sm" variant="outline" onClick={() => { st.updateTicket(t.id, { humanInCharge: true }); toast.info("Vous avez repris la main — agent en pause sur ce ticket"); }}><Hand className="h-3 w-3" />Reprendre la main</Button>}</div>
+            <div className="mb-3 flex items-center justify-between"><h3 className="font-display text-lg font-semibold">Conversation WhatsApp</h3>{!t.humanInCharge && <Button size="sm" variant="outline" onClick={() => { st.updateTicket(t.id, { humanInCharge: true }); toast.info("Vous êtes responsable de ce dossier"); }}><Hand className="h-3 w-3" />Reprendre la main</Button>}</div>
             <Bubbles messages={t.messages} />
             <div className="mt-3 flex gap-2"><Textarea dir="auto" value={reply} onChange={(e) => setReply(e.target.value)} placeholder="Répondre au client…" className="min-h-10" /><Button disabled={!reply.trim()} onClick={() => { st.replyTicket(t.id, reply.trim()); setReply(""); toast.success(`Message WhatsApp envoyé à ${c.name}`); }}>Envoyer</Button></div>
           </Card>
@@ -70,7 +70,7 @@ function TicketPage() {
             {t.refuseReason && <p className="text-brand">Motif de refus : {t.refuseReason}</p>}
             <Button variant="outline" size="sm" onClick={() => simplePdf("FICHE D'INTERVENTION", [`Ticket : ${t.num}`, `Client : ${c.name} — ${c.phone}`, `Adresse : ${c.address}, ${c.quartier}, ${c.city}`, `Produit : ${p.name} (${p.brand})`, `Type : ${t.type}`, `Garantie : ${w.state === "ok" ? "couverte" : w.state === "expired" ? "expirée" : "à vérifier"}`, `Technicien : ${t.technician ?? "—"}`, `Date : ${t.interventionDate ? dateFr(t.interventionDate) : "—"}`, `Description : ${t.description}`], `intervention-${t.num}.pdf`)}><FileText className="h-3 w-3" />Fiche d'intervention PDF</Button>
           </Card>
-          <Card className="text-sm"><h3 className="mb-2 font-display font-semibold">Chronologie</h3><ul className="space-y-1 border-l-2 border-brand/30 pl-3 text-xs">{t.messages.map((m, i) => <li key={i}>{dateTimeFr(m.at)} — {m.from === "agent" ? "Agent SAV" : m.from === "human" ? "Équipe" : "Client"}</li>)}<li>{dateTimeFr(t.createdAt)} — Ticket créé ({t.source})</li></ul></Card>
+          <Card className="text-sm"><h3 className="mb-2 font-display font-semibold">Chronologie</h3><ul className="space-y-1 border-l-2 border-brand/30 pl-3 text-xs">{t.messages.map((m, i) => <li key={i}>{dateTimeFr(m.at)} — {m.from === "agent" ? "Équipe SAV" : m.from === "human" ? "Équipe" : "Client"}</li>)}<li>{dateTimeFr(t.createdAt)} — Ticket créé ({t.source})</li></ul></Card>
         </div>
       </div>
     </div>

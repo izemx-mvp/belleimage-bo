@@ -4,21 +4,17 @@ import {
   CircleDot, CheckCircle2, Package, PackageCheck, Truck, BadgeCheck, XCircle, Undo2, Clock, AlertTriangle, Wrench, CalendarClock, Lock, Banknote, Ban, Bot,
 } from "lucide-react";
 import type { Product, Sub } from "@/lib/types";
+import logoAsset from "@/assets/belle-image-logo.png.asset.json";
 import { cn } from "@/lib/utils";
 
-export const LOGO_URL = "https://belleimage.izemxlab.com/assets/belle-image-logo-Us-b5llW.png";
+export const LOGO_URL = logoAsset.url;
 export const SHOWROOM_URL = "https://belleimage.izemxlab.com/assets/showroom-1-DppMc5qv.png";
 
 export function Logo({ light, className }: { light?: boolean; className?: string }) {
   const [err, setErr] = useState(false);
-  if (err)
-    return (
-      <div className={cn("flex items-baseline gap-2", className)}>
-        <span className={cn("font-display text-xl font-semibold", light ? "text-sidebar-foreground" : "text-foreground")}>Belle Image</span>
-        <span className="font-arabic text-sm text-brand" dir="rtl">أحسن صورة</span>
-      </div>
-    );
-  return <img src={LOGO_URL} alt="Belle Image — أحسن صورة" className={cn("h-9 w-auto object-contain", light && "brightness-0 invert", className)} onError={() => setErr(true)} />;
+  return <div className={cn("flex shrink-0 items-center justify-center rounded-xl bg-card p-2", light && "mx-auto", className)}>
+    {err ? <span className="text-sm text-muted-foreground">Logo indisponible</span> : <img src={LOGO_URL} alt="Belle Image — أحسن صورة" className="h-28 w-28 object-contain" onError={() => setErr(true)} />}
+  </div>;
 }
 
 const SUB_ICON: Record<Sub, typeof Tv> = {
@@ -76,8 +72,8 @@ export function StatusBadge({ s, pulse }: { s: string; pulse?: boolean }) {
 export function Pill({ tone = "muted", children, className }: { tone?: Tone; children: ReactNode; className?: string }) {
   return <span className={cn("inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-semibold", TONES[tone], className)}>{children}</span>;
 }
-export function AgentBadge({ agent }: { agent: string }) {
-  return <Pill tone="brand" className="shadow-[0_0_12px_-2px_var(--brand)]"><Bot className="h-3 w-3" />{agent}</Pill>;
+export function SourceBadge({ source }: { source: string }) {
+  return <Pill tone="brand" className="shadow-[0_0_12px_-2px_var(--brand)]">{source}</Pill>;
 }
 
 export function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: string; actions?: ReactNode }) {

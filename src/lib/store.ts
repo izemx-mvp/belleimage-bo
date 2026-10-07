@@ -284,7 +284,7 @@ export const useStore = create<State>()(
           if (price === p.price) return ERR("Le prix est identique.");
           d.priceHistory.unshift({ id: id("h"), productId, old: p.price, new: price, origin, author, at: iso(nowMs(d)), ...extra });
           const old = p.price; p.price = price;
-          log(d, origin === "WhatsApp Admin" ? "Agent Admin Prix" : author, "Prix", `${origin === "WhatsApp Admin" ? "Agent Admin Prix a modifié" : "Prix modifié pour"} ${p.name} : ${fmt(old)} → ${fmt(price)} DH.`);
+          log(d, origin === "WhatsApp Admin" ? "Administration" : author, "Prix", `${origin === "WhatsApp Admin" ? "Administration a modifié" : "Prix modifié pour"} ${p.name} : ${fmt(old)} → ${fmt(price)} DH.`);
           return OK(`Prix mis à jour : ${fmt(price)} DH`);
         }),
         undoPrice: (hid, force) => run((d) => {
@@ -360,7 +360,7 @@ export const useStore = create<State>()(
         setThreshold: (pid, v) => mut((d) => { d.products.find((x) => x.id === pid)!.threshold = Math.max(0, v); }),
         sendWhatsApp: (clientId, text, ref) => mut((d) => {
           addMsgToClientTranscript(d, clientId, { from: "human", text, at: iso(nowMs(d)) }, ref?.orderId, ref?.ticketId);
-          log(d, "Salma", "Agents", `Message WhatsApp envoyé à ${d.clients.find((c) => c.id === clientId)!.name}.`);
+          log(d, "Salma", "Messages", `Message WhatsApp envoyé à ${d.clients.find((c) => c.id === clientId)!.name}.`);
         }),
 
         createTicket: (t, actor = "Salma") => {
@@ -391,18 +391,18 @@ export const useStore = create<State>()(
         replyTicket: (tid, text) => mut((d) => {
           const t = d.tickets.find((x) => x.id === tid)!; t.humanInCharge = true;
           t.messages.push({ from: "human", text, at: iso(nowMs(d)) });
-          log(d, "Houda", "SAV", `Réponse humaine sur ${t.num} — agent en pause sur ce ticket.`);
+          log(d, "Houda", "SAV", `Réponse de l’équipe sur ${t.num}.`);
         }),
         addReview: (orderId, rating, comment) => {
           let make = false; let o: Order | undefined;
           mut((d) => {
             o = d.orders.find((x) => x.id === orderId)!;
             d.reviews.unshift({ id: id("r"), clientId: o.clientId, orderId, rating, comment, at: iso(nowMs(d)) });
-            make = rating <= 2 && !!d.settings.agents["Agent SAV"].lowRatingTicket;
+            make = rating <= 2 && !!d.settings.agents["Équipe SAV"].lowRatingTicket;
             notify(d, `Nouvel avis ${rating}/5`, rating <= 2 ? "danger" : "info", "/");
           });
           if (make && o) {
-            const r = get().createTicket({ clientId: o.clientId, orderId, productId: o.lines[0].productId, type: "Livraison", source: "Avis ≤ 2/5", description: `Avis ${rating}/5 : « ${comment} »`, summary: `Le client a noté sa livraison ${rating}/5 : « ${comment} ».` }, "Agent SAV");
+            const r = get().createTicket({ clientId: o.clientId, orderId, productId: o.lines[0].productId, type: "Livraison", source: "Avis ≤ 2/5", description: `Avis ${rating}/5 : « ${comment} »`, summary: `Le client a noté sa livraison ${rating}/5 : « ${comment} ».` }, "Équipe SAV");
             if (r.ok && r.id) mut((d) => { d.reviews[0].ticketId = r.id; });
           }
         },
@@ -418,7 +418,7 @@ export const useStore = create<State>()(
 
         runDemoStep: () => {
           const s = get(); const d0 = s.db; const step = d0.demoStep % 6; const ag = d0.settings.agents;
-          const agentFor = ["Agent Catalogue", "Agent SAV", "Agent Admin Prix", "Agent SAV", "Agent Admin Prix", null][step];
+          const agentFor = ["Équipe commerciale", "Équipe SAV", "Administration", "Équipe SAV", "Administration", null][step];
           if (agentFor && (ag[agentFor].paused || !ag[agentFor].active)) { mut((d) => { d.demoStep++; }); return null; }
           let text: string | null = null;
           if (step === 0) {
@@ -435,21 +435,21 @@ export const useStore = create<State>()(
                 { from: "agent", text: `Parfait ! J'ai préparé votre demande ${num}. Un conseiller Belle Image va la confirmer très vite.`, at: iso(nowMs(d)), buttons: ["Merci", "Parler à un conseiller"] },
               ] });
               const oid = id("o");
-              d.orders.unshift({ id: oid, num, clientId: c.id, lines: [{ productId: p.id, name: p.name, qty: 1, unitPrice: price }], fee, status: "Nouvelle", source: "WhatsApp Agent Catalogue", mode: "Livraison à domicile", createdAt: iso(nowMs(d)), missing: [], notes: "Paiement à la livraison", owner: "Agent Catalogue", transcriptId: tid, history: [{ at: iso(nowMs(d)), text: "Demande créée par l'IA — à confirmer", actor: "Agent Catalogue" }] });
-              log(d, "Agent Catalogue", "Agents", `Agent Catalogue a créé la commande ${num} (à confirmer).`);
-              notify(d, `Agent Catalogue a créé la commande ${num} — à confirmer`, "info", `/commandes/${oid}`);
-              text = `Agent Catalogue a créé la commande ${num}`; d.demoStep++;
+              d.orders.unshift({ id: oid, num, clientId: c.id, lines: [{ productId: p.id, name: p.name, qty: 1, unitPrice: price }], fee, status: "Nouvelle", source: "WhatsApp", mode: "Livraison à domicile", createdAt: iso(nowMs(d)), missing: [], notes: "Paiement à la livraison", owner: "Équipe commerciale", transcriptId: tid, history: [{ at: iso(nowMs(d)), text: "Demande reçue — à confirmer", actor: "Équipe commerciale" }] });
+              log(d, "Équipe commerciale", "Messages", `Équipe commerciale a créé la commande ${num} (à confirmer).`);
+              notify(d, `Équipe commerciale a créé la commande ${num} — à confirmer`, "info", `/commandes/${oid}`);
+              text = `Équipe commerciale a créé la commande ${num}`; d.demoStep++;
             });
           } else if (step === 1) {
             const d = s.db; const c = d.clients[1]; const o = d.orders.find((x) => x.status === "Livrée & encaissée")!;
-            const r = s.createTicket({ clientId: c.id, orderId: o.id, productId: o.lines[0].productId, type: "Produit abîmé", source: "WhatsApp Agent SAV", photos: 1, priority: "Haute",
+            const r = s.createTicket({ clientId: c.id, orderId: o.id, productId: o.lines[0].productId, type: "Produit abîmé", source: "WhatsApp", photos: 1, priority: "Haute",
               summary: `Le client signale que ${o.lines[0].name} est arrivé abîmé (choc sur le côté). Photo reçue. Sous garantie ✓.`, description: "Choc visible sur le côté gauche à la réception.",
               messages: [
                 { from: "client", text: "Salam, l'appareil est arrivé avec un choc sur le côté.", at: iso(nowMs(d) - 120000) },
                 { from: "agent", text: "Je suis désolé. Pouvez-vous m'envoyer une photo ?", at: iso(nowMs(d) - 110000) },
                 { from: "client", text: "Voilà", at: iso(nowMs(d) - 60000), image: true },
                 { from: "agent", text: "Merci, garantie vérifiée ✓. Ticket créé, un responsable SAV vous contacte rapidement.", at: iso(nowMs(d)) },
-              ] }, "Agent SAV");
+              ] }, "Équipe SAV");
             mut((x) => { x.demoStep++; });
             text = r.ok ? r.msg ?? null : null;
           } else if (step === 2) {
@@ -463,8 +463,8 @@ export const useStore = create<State>()(
                 { from: "agent", text: "✓ Prix appliqué et tracé dans l'historique.", at: iso(nowMs(x)) },
               ] }); });
               s.setPrice(p.id, target, "WhatsApp Admin", "+212 6 61 00 00 01", { transcriptId: tid });
-              mut((x) => notify(x, `Agent Admin Prix : ${p.name} → 4 990 DH`, "info", "/produits?onglet=historique"));
-              text = "Agent Admin Prix a modifié le prix de la TV LG OLED 55\"";
+              mut((x) => notify(x, `Administration : ${p.name} → 4 990 DH`, "info", "/produits?onglet=historique"));
+              text = "Administration a modifié le prix de la TV LG OLED 55\"";
             }
             mut((x) => { x.demoStep++; });
           } else if (step === 3) {
@@ -474,7 +474,7 @@ export const useStore = create<State>()(
             text = "Avis 2/5 reçu — ticket SAV créé";
           } else if (step === 4) {
             mut((x) => {
-              log(x, "Agent Admin Prix", "Agents", "Tentative de modification de prix depuis +212 6 99 88 77 66 (non autorisé) — refusée, aucun prix changé.");
+              log(x, "Administration", "Messages", "Tentative de modification de prix depuis +212 6 99 88 77 66 (non autorisé) — refusée, aucun prix changé.");
               notify(x, "Sécurité : numéro non autorisé (+212 6 99 88 77 66) a tenté de modifier un prix — refusé", "danger", "/base-de-connaissance?onglet=regles");
               x.demoStep++;
             });

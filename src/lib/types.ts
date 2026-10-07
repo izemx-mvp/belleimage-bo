@@ -1,4 +1,4 @@
-export type Agent = "Agent Catalogue" | "Agent SAV" | "Agent Admin Prix";
+export type Agent = "Équipe commerciale" | "Équipe SAV" | "Administration";
 export type Sub =
   | "Réfrigérateurs" | "Lave-linge" | "Cuisson" | "TV & image" | "Climatisation" | "Petit électroménager"
   | "Salons" | "Chambres" | "Salles à manger" | "Rangement";
@@ -16,7 +16,7 @@ export interface OrderLine { productId: string; name: string; qty: number; unitP
 export type OrderStatus = "Nouvelle" | "Confirmée" | "En préparation" | "Prête" | "En livraison" | "Livrée & encaissée" | "Annulée" | "Retournée";
 export interface Order {
   id: string; num: string; clientId: string; lines: OrderLine[]; fee: number; status: OrderStatus;
-  source: "Magasin" | "WhatsApp Agent Catalogue" | "Téléphone"; mode: "Livraison à domicile" | "Retrait en magasin";
+  source: "Magasin" | "WhatsApp" | "Téléphone"; mode: "Livraison à domicile" | "Retrait en magasin";
   createdAt: string; missing: string[]; notes: string; owner: string; transcriptId?: string;
   history: { at: string; text: string; actor: string }[]; cancelReason?: string; deliveredAt?: string;
 }
@@ -37,7 +37,7 @@ export interface Ticket {
 }
 export interface PriceChange { id: string; productId: string; old: number; new: number; origin: "Import Excel" | "WhatsApp Admin" | "Manuel" | "Fin de promo" | "Annulation"; author: string; at: string; batchId?: string; transcriptId?: string; undone?: boolean }
 export interface StockMove { id: string; productId: string; type: "Entrée fournisseur" | "Sortie livraison" | "Retour client" | "Ajustement" | "Inventaire"; qty: number; before: number; after: number; reason: string; at: string; author: string }
-export interface Activity { id: string; at: string; actor: string; kind: "Commandes" | "Stock" | "Prix" | "Livraisons" | "SAV" | "Agents" | "Import"; text: string }
+export interface Activity { id: string; at: string; actor: string; kind: "Commandes" | "Stock" | "Prix" | "Livraisons" | "SAV" | "Messages" | "Import"; text: string }
 export interface Notif { id: string; at: string; text: string; read: boolean; level: "info" | "warn" | "danger" | "success"; link?: string }
 export interface Transcript { id: string; title: string; clientName: string; phone: string; messages: Msg[] }
 export interface ImportBatch { id: string; file: string; at: string; author: string; applied: number; ignored: number; errors: number; changes: { productId: string; old: number; new: number }[]; undone: boolean }

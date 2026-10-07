@@ -198,13 +198,13 @@ export function buildSeed(now = Date.now()) {
     const fee = feeFor(c, sub, ZONES) ?? 0;
     const num = `CMD-2026-${String(104 + n).padStart(4, "0")}`;
     const fromAgent = pl.s === "Nouvelle" && n === 0;
-    const src = fromAgent || n % 4 === 2 ? "WhatsApp Agent Catalogue" : n % 4 === 1 ? "Téléphone" : "Magasin";
+    const src = fromAgent || n % 4 === 2 ? "WhatsApp" : n % 4 === 1 ? "Téléphone" : "Magasin";
     const created = at(pl.d, 10 + (n % 8), (n * 13) % 60);
     const o: Order = {
       id: `o${n + 1}`, num, clientId: c.id, lines, fee, status: pl.s, source: src,
       mode: n % 9 === 5 ? "Retrait en magasin" : "Livraison à domicile", createdAt: created,
-      missing: fromAgent ? ["adresse"] : [], notes: "", owner: src === "WhatsApp Agent Catalogue" ? "Agent Catalogue" : ["Salma", "Nabil", "Houda"][n % 3],
-      history: [{ at: created, text: "Commande créée", actor: src === "WhatsApp Agent Catalogue" ? "Agent Catalogue" : "Nabil" }],
+      missing: fromAgent ? ["adresse"] : [], notes: "", owner: src === "WhatsApp" ? "Équipe commerciale" : ["Salma", "Nabil", "Houda"][n % 3],
+      history: [{ at: created, text: "Commande créée", actor: src === "WhatsApp" ? "Équipe commerciale" : "Nabil" }],
       cancelReason: pl.s === "Annulée" ? "Client a changé d'avis" : undefined,
       transcriptId: fromAgent ? "t1" : undefined,
     };
@@ -267,7 +267,7 @@ export function buildSeed(now = Date.now()) {
     return {
       id: `s${i + 1}`, num: `SAV-${String(i + 1).padStart(4, "0")}`, clientId: i === 0 ? clients[1].id : o.clientId, orderId: o.id, productId: p.id,
       type: tktTypes[i % tktTypes.length], status: st, priority: i % 3 === 0 ? "Haute" : "Normale", createdAt: created,
-      source: i === 0 ? "WhatsApp Agent SAV" : i % 3 === 1 ? "Magasin" : i % 3 === 2 ? "Téléphone" : "WhatsApp Agent SAV",
+      source: i === 0 ? "WhatsApp" : i % 3 === 1 ? "Magasin" : i % 3 === 2 ? "Téléphone" : "WhatsApp",
       summary: i === 0 ? "Le client signale que le réfrigérateur est arrivé avec une porte rayée. Photo reçue. Sous garantie." : `Le client signale un problème de type « ${tktTypes[i % tktTypes.length].toLowerCase()} » sur ${p.name}.`,
       description: "Description fournie par le client via WhatsApp.", technician: ["Technicien assigné", "Intervention planifiée", "Résolue"].includes(st) || st === "Clôturée" ? "Rachid (technicien)" : undefined,
       interventionDate: st === "Intervention planifiée" ? dateOnly(-2) : undefined, solution: st === "Clôturée" || st === "Résolue" ? "Réparation" : undefined,
@@ -307,15 +307,15 @@ export function buildSeed(now = Date.now()) {
   }));
 
   const activity: Activity[] = [
-    { id: uid("a"), at: at(0, 9, 15), actor: "Agent Catalogue", kind: "Agents", text: `Agent Catalogue a créé la commande ${orders[0].num} (à confirmer).` },
-    { id: uid("a"), at: at(1, 18, 6), actor: "Agent SAV", kind: "SAV", text: "Réclamation SAV-0001 créée par l'Agent SAV." },
+    { id: uid("a"), at: at(0, 9, 15), actor: "Équipe commerciale", kind: "Messages", text: `Équipe commerciale a créé la commande ${orders[0].num} (à confirmer).` },
+    { id: uid("a"), at: at(1, 18, 6), actor: "Équipe SAV", kind: "SAV", text: "Réclamation SAV-0001 créée par l'Équipe SAV." },
     { id: uid("a"), at: at(1, 19), actor: "Youssef", kind: "Livraisons", text: "Livraison encaissée en espèces." },
     { id: uid("a"), at: at(2, 11), actor: "Salma", kind: "Stock", text: "Ajustement de stock : casse en dépôt." },
-    { id: uid("a"), at: at(3, 11, 1), actor: "Agent Admin Prix", kind: "Prix", text: "Agent Admin Prix a modifié le prix de TV LG OLED 55\" C3 : 6 490 → 5 990 DH." },
+    { id: uid("a"), at: at(3, 11, 1), actor: "Administration", kind: "Prix", text: "Administration a modifié le prix de TV LG OLED 55\" C3 : 6 490 → 5 990 DH." },
     { id: uid("a"), at: at(4, 11), actor: "Salma", kind: "Import", text: "Import Excel « prix-octobre.xlsx » : 4 prix mis à jour." },
   ];
   const notifications: Notif[] = [
-    { id: uid("n"), at: at(0, 9, 15), text: `Nouvelle commande ${orders[0].num} créée par l'Agent Catalogue — adresse manquante`, read: false, level: "info", link: `/commandes/${orders[0].id}` },
+    { id: uid("n"), at: at(0, 9, 15), text: `Nouvelle commande ${orders[0].num} créée par l'Équipe commerciale — adresse manquante`, read: false, level: "info", link: `/commandes/${orders[0].id}` },
     { id: uid("n"), at: at(1, 18, 6), text: "SAV-0001 : réclamation produit abîmé (garantie ✓)", read: false, level: "warn", link: "/sav/s1" },
     { id: uid("n"), at: at(0, 8), text: "5 produits sous le seuil d'alerte", read: false, level: "warn", link: "/stock" },
   ];
@@ -365,9 +365,9 @@ export function buildSeed(now = Date.now()) {
       socials: [{ name: "Facebook", url: "https://www.facebook.com/Belleimagekenitra" }, { name: "Instagram", url: "https://www.instagram.com/belleimagekenitra" }, { name: "WhatsApp", url: "https://wa.me/212661000000" }],
       adminNumbers: ["+212 6 61 00 00 01"], varThreshold: 30, confirmMinutes: 5, capacity: 4,
       agents: {
-        "Agent Catalogue": { active: true, paused: false, tone: "chaleureux", allowOrders: true, showPromo: true, showStock: true },
-        "Agent SAV": { active: true, paused: false, tone: "professionnel", autoTickets: true, checkWarranty: true, lowRatingTicket: true },
-        "Agent Admin Prix": { active: true, paused: false, tone: "concis" },
+        "Équipe commerciale": { active: true, paused: false, tone: "chaleureux", allowOrders: true, showPromo: true, showStock: true },
+        "Équipe SAV": { active: true, paused: false, tone: "professionnel", autoTickets: true, checkWarranty: true, lowRatingTicket: true },
+        "Administration": { active: true, paused: false, tone: "concis" },
       } as Record<string, { active: boolean; paused: boolean; tone: string; [k: string]: unknown }>,
       demoEvents: true, reduceMotion: false,
     },

@@ -24,7 +24,7 @@ export function Bubbles({ messages }: { messages: Msg[] }) {
           <div key={i} className={cn("flex", mine ? "justify-end" : "justify-start")}>
             <div className={cn("max-w-[85%] rounded-2xl px-3 py-2 text-sm shadow-soft", mine ? "rounded-br-sm bg-card" : "rounded-bl-sm bg-success/10")}>
               <div className="mb-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                {m.from === "agent" ? "Agent IA" : m.from === "human" ? "Belle Image (humain)" : m.from === "admin" ? "Admin" : "Client"}
+                {m.from === "agent" ? "Belle Image" : m.from === "human" ? "Belle Image (humain)" : m.from === "admin" ? "Admin" : "Client"}
               </div>
               {m.image && <div className="mb-1 flex h-24 w-36 items-center justify-center rounded-lg bg-muted text-muted-foreground"><ImageIcon className="h-6 w-6" /></div>}
               <p dir="auto" className="whitespace-pre-wrap">{m.text}</p>

@@ -16,7 +16,7 @@ import { PageHeader, Tabs, Card, Pill } from "@/components/bi/ui";
 type Tab = "faq" | "documents" | "infos" | "regles";
 export const Route = createFileRoute("/base-de-connaissance")({
   validateSearch: (s: Record<string, unknown>): { onglet?: Tab } => ({ onglet: (s.onglet as Tab) || undefined }),
-  head: () => ({ meta: [{ title: "Base de connaissance — Belle Image" }, { name: "description", content: "FAQ, documents, infos et règles des agents IA." }, { property: "og:title", content: "Base de connaissance — Belle Image" }, { property: "og:description", content: "Source de vérité des agents IA." }] }),
+  head: () => ({ meta: [{ property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }, { title: "Base de connaissance — Belle Image" }, { name: "description", content: "FAQ, documents, infos et procédures du magasin." }, { property: "og:title", content: "Base de connaissance — Belle Image" }, { property: "og:description", content: "Informations de référence pour l’équipe Belle Image." }] }),
   component: KB,
 });
 
@@ -38,38 +38,13 @@ export function answer(db: DB, q: string): { text: string; source: string } {
 }
 
 function KB() {
-  const s = Route.useSearch(); const nav = useNavigate({ from: "/base-de-connaissance" }); const tab = s.onglet ?? "faq";
-  const [test, setTest] = useState(false);
-  return (
-    <div>
-      <PageHeader title="Base de connaissance" subtitle="Tout ce que les agents peuvent dire hors catalogue vient d'ici." actions={<Button onClick={() => setTest(true)}><Bot className="h-4 w-4" />Tester l'agent</Button>} />
-      <Tabs value={tab} onChange={(v) => nav({ search: { onglet: v } })} items={[{ v: "faq", label: "FAQ" }, { v: "documents", label: "Documents" }, { v: "infos", label: "Infos générales" }, { v: "regles", label: "Règles des agents" }]} />
-      {tab === "faq" && <Faq />}{tab === "documents" && <Docs />}{tab === "infos" && <Infos />}{tab === "regles" && <Rules />}
-      <TestAgent open={test} onClose={() => setTest(false)} />
-    </div>
-  );
-}
-
-function TestAgent({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const db = useStore((s) => s.db); const [q, setQ] = useState(""); const [steps, setSteps] = useState<string[]>([]); const [res, setRes] = useState<{ text: string; source: string } | null>(null);
-  const run = () => {
-    if (!q.trim()) return; setRes(null); const st = ["Recherche dans le catalogue…", "Vérification du stock…", "Lecture de la base de connaissance…"]; setSteps([]);
-    st.forEach((x, i) => setTimeout(() => setSteps((p) => [...p, x]), 350 * (i + 1)));
-    setTimeout(() => setRes(answer(db, q)), 1300);
-  };
-  return (
-    <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
-      <SheetContent className="w-full sm:max-w-md">
-        <SheetHeader><SheetTitle className="font-display text-2xl">Tester l'agent</SheetTitle></SheetHeader>
-        <div className="space-y-3 px-4 text-sm">
-          <Textarea dir="auto" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ex. : Puis-je payer en ligne ? / Prix du réfrigérateur Samsung RT38 ?" />
-          <Button onClick={run}><Sparkles className="h-4 w-4" />Poser la question</Button>
-          <ul className="space-y-1 text-xs text-muted-foreground">{steps.map((x) => <li key={x}>✓ {x}</li>)}</ul>
-          {res && <Card className="animate-fadeup"><p dir="auto">{res.text}</p><p className="mt-2 text-xs font-semibold text-brand">Source : {res.source}</p></Card>}
-        </div>
-      </SheetContent>
-    </Sheet>
-  );
+  const s = Route.useSearch(); const nav = useNavigate({ from: "/base-de-connaissance" });
+  const tab = s.onglet ?? "faq";
+  return <div>
+    <PageHeader title="Base de connaissance" />
+    <Tabs value={tab} onChange={(v) => nav({ search: { onglet: v } })} items={[{ v: "faq", label: "FAQ" }, { v: "documents", label: "Documents" }, { v: "infos", label: "Infos générales" }, { v: "regles", label: "Règles du magasin" }]} />
+    {tab === "faq" && <Faq />}{tab === "documents" && <Docs />}{tab === "infos" && <Infos />}{tab === "regles" && <Rules />}
+  </div>;
 }
 
 function Faq() {
@@ -132,32 +107,11 @@ function Infos() {
 }
 
 function Rules() {
-  const db = useStore((s) => s.db); const mut = useStore((s) => s.mut); const st = db.settings; const [num, setNum] = useState("");
-  const ag = (k: string) => st.agents[k];
-  const count = (a: string) => db.activity.filter((x) => x.actor === a).length;
-  const Toggle = ({ a, k, label }: { a: string; k: string; label: string }) => <label className="flex items-center justify-between text-sm">{label}<Switch checked={!!ag(a)[k]} onCheckedChange={(v) => mut((d) => { d.settings.agents[a][k] = v; })} /></label>;
-  return (
-    <div className="space-y-6">
-      <div className="grid gap-4 lg:grid-cols-3">
-        {["Agent Catalogue", "Agent SAV", "Agent Admin Prix"].map((a) => (
-          <Card key={a} className="space-y-3">
-            <div className="flex items-center justify-between"><h3 className="flex items-center gap-2 font-display text-lg font-semibold"><Bot className="h-5 w-5 text-brand" />{a}</h3><Switch checked={ag(a).active} onCheckedChange={(v) => mut((d) => { d.settings.agents[a].active = v; })} /></div>
-            <div className="text-xs text-muted-foreground">Langues : FR / AR (réponse dans la langue du client) · {count(a)} actions tracées</div>
-            <div><Label>Ton</Label><select value={ag(a).tone} onChange={(e) => mut((d) => { d.settings.agents[a].tone = e.target.value; })} className="h-9 w-full rounded-md border bg-card px-2 text-sm">{["professionnel", "chaleureux", "concis"].map((t) => <option key={t}>{t}</option>)}</select></div>
-            {a === "Agent Catalogue" && <><Toggle a={a} k="allowOrders" label="Créer des demandes de commande" /><Toggle a={a} k="showPromo" label="Afficher les prix promo" /><Toggle a={a} k="showStock" label="Afficher le stock" /></>}
-            {a === "Agent SAV" && <><Toggle a={a} k="autoTickets" label="Créer les tickets automatiquement" /><Toggle a={a} k="checkWarranty" label="Vérifier la garantie" /><Toggle a={a} k="lowRatingTicket" label="Ticket si note ≤ 2/5" /></>}
-            {a === "Agent Admin Prix" && <>
-              <div><Label>Numéros admin autorisés</Label>{st.adminNumbers.map((n, i) => <div key={n} className="mt-1 flex items-center justify-between rounded-lg border px-2 py-1 text-sm tnum">{n}<button disabled={st.adminNumbers.length === 1} onClick={() => mut((d) => { d.settings.adminNumbers.splice(i, 1); })} className="disabled:opacity-30" aria-label="Retirer"><Trash2 className="h-3 w-3" /></button></div>)}
-                <div className="mt-1 flex gap-1"><Input value={num} onChange={(e) => setNum(e.target.value)} placeholder="+212 6 …" className="h-8" /><Button size="sm" onClick={() => { if (!/^\+212\s?[67](\s?\d){8}$/.test(num.trim())) return toast.error("Numéro marocain invalide"); mut((d) => { d.settings.adminNumbers.push(num.trim()); }); setNum(""); toast.success("Numéro autorisé ajouté"); }}>Ajouter</Button></div></div>
-              <label className="flex items-center justify-between text-sm">Seuil de variation (±%)<Input type="number" className="h-8 w-20" value={st.varThreshold} onChange={(e) => mut((d) => { d.settings.varThreshold = Math.max(1, +e.target.value); })} /></label>
-              <label className="flex items-center justify-between text-sm">Confirmation avant chaque modification<Switch checked disabled /></label>
-              <label className="flex items-center justify-between text-sm">Validité de la confirmation<span>{st.confirmMinutes} min</span></label>
-            </>}
-          </Card>))}
-      </div>
-      <Card><h3 className="mb-3 flex items-center gap-2 font-display text-lg font-semibold"><ShieldCheck className="h-5 w-5 text-success" />Les 7 garde-fous</h3>
-        <ol className="grid list-decimal gap-1 pl-5 text-sm md:grid-cols-2">{["Aucun prix inventé : seul le prix du catalogue est annoncé.", "Aucun stock inventé : disponibilité réelle du store.", "Aucune commande confirmée par l'IA : statut « Nouvelle », un humain confirme.", "Modification de prix = admin autorisé + confirmation + trace + annulation.", "Garantie calculée, jamais promise.", "Information manquante → l'agent la demande.", "Intervention humaine à tout moment, aucun paiement en ligne ni donnée bancaire."].map((g) => <li key={g}>{g}</li>)}</ol>
-      </Card>
-    </div>
-  );
+  const db = useStore((s) => s.db); const mut = useStore((s) => s.mut);
+  return <div className="max-w-xl space-y-5">
+    <h3 className="font-display text-xl font-semibold">Prix et validation</h3>
+    <label className="flex items-center justify-between gap-3 text-sm">Seuil d’alerte de variation (±%)<Input type="number" min={1} className="w-24" value={db.settings.varThreshold} onChange={(e) => mut((d) => { d.settings.varThreshold = Math.max(1, +e.target.value); })} /></label>
+    <label className="flex items-center justify-between gap-3 text-sm">Confirmation avant chaque modification<Switch checked disabled /></label>
+    <p className="text-sm text-muted-foreground">Toute commande doit être confirmée par l’équipe. Les changements de prix sont tracés et annulables. Paiement à la livraison uniquement.</p>
+  </div>;
 }

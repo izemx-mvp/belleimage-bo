@@ -50,21 +50,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     const h = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setCmd((v) => !v); } };
     window.addEventListener("keydown", h); return () => window.removeEventListener("keydown", h);
   }, []);
-  useEffect(() => {
-    if (!db.settings.demoEvents) return;
-    const t = setInterval(() => {
-      if (document.hidden) return;
-      const txt = runDemoStep();
-      if (txt) { toast(txt, { icon: <Bot className="h-4 w-4 text-brand" /> }); setWave((w) => w + 1); }
-    }, 38000);
-    return () => clearInterval(t);
-  }, [db.settings.demoEvents, runDemoStep]);
   useEffect(() => { document.documentElement.classList.toggle("reduce-motion", !!db.settings.reduceMotion); }, [db.settings.reduceMotion]);
 
   const crumbs = NAV.find((n) => n.to !== "/" && path.startsWith(n.to));
   const Side = (
     <aside className={cn("flex h-full flex-col bg-sidebar text-sidebar-foreground transition-all", collapsed ? "w-[76px]" : "w-64")}>
-      <div className="flex h-16 items-center justify-between px-4">
+      <div className="relative flex min-h-40 items-center justify-between px-4 py-3">
         {!collapsed && <Logo light />}
         <button onClick={() => setCollapsed(!collapsed)} className="hidden rounded-md p-1.5 text-sidebar-foreground/60 hover:bg-sidebar-accent md:block" aria-label="Réduire"><PanelLeftClose className={cn("h-4 w-4", collapsed && "rotate-180")} /></button>
       </div>
@@ -91,7 +82,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           <DropdownMenuContent side="top" align="start" className="w-64">
             <DropdownMenuItem onClick={() => toast.info("Profil : Salma Berrada · admin@belleimage.ma · Administratrice")}>Mon profil</DropdownMenuItem>
             <DropdownMenuCheckboxItem checked={db.settings.reduceMotion} onCheckedChange={(v) => mut((d) => { d.settings.reduceMotion = !!v; })}><Wind className="h-4 w-4" />Réduire les animations</DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem checked={db.settings.demoEvents} onCheckedChange={(v) => mut((d) => { d.settings.demoEvents = !!v; })}><Sparkles className="h-4 w-4" />Événements de démo</DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => { reset(); toast.success("Données de démo réinitialisées"); }}><RotateCcw className="h-4 w-4" />Réinitialiser les données de démo</DropdownMenuItem>
             <DropdownMenuItem onClick={() => { logout(); nav({ to: "/login" }); }}><LogOut className="h-4 w-4" />Déconnexion</DropdownMenuItem>
@@ -119,7 +109,6 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Search className="h-4 w-4" />Rechercher<kbd className="ml-4 rounded border px-1 text-[10px]">Ctrl K</kbd>
             </button>
             <Button size="sm" onClick={() => nav({ to: "/commandes", search: { nouveau: "1" } })}><Plus className="h-4 w-4" /><span className="hidden sm:inline">Nouvelle commande</span></Button>
-            <AgentsPopover />
             <Popover onOpenChange={(o) => { if (!o && unread) readAllNotifs(); }}>
               <PopoverTrigger className="relative rounded-full p-2 hover:bg-accent" aria-label="Notifications">
                 <Bell className="h-5 w-5" />
@@ -156,30 +145,3 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 }
 
-function AgentsPopover() {
-  const db = useStore((s) => s.db); const mut = useStore((s) => s.mut);
-  const agents = ["Agent Catalogue", "Agent SAV", "Agent Admin Prix"] as const;
-  const allOk = agents.every((a) => db.settings.agents[a].active && !db.settings.agents[a].paused);
-  return (
-    <Popover>
-      <PopoverTrigger className="hidden items-center gap-2 rounded-full border bg-card px-3 py-1.5 text-xs font-semibold md:flex">
-        <span className={cn("h-2 w-2 rounded-full", allOk ? "bg-success animate-breathe" : "bg-warning")} />{allOk ? "Agents opérationnels" : "Agent en pause"}
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-96 space-y-3">
-        {agents.map((a) => {
-          const st = db.settings.agents[a]; const acts = db.activity.filter((x) => x.actor === a).slice(0, 5);
-          return (
-            <div key={a} className="rounded-xl border p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 font-semibold"><Bot className="h-4 w-4 text-brand" />{a}</div>
-                <Button size="sm" variant="outline" onClick={() => mut((d) => { d.settings.agents[a].paused = !d.settings.agents[a].paused; })}>{st.paused ? <><Play className="h-3 w-3" />Reprendre</> : <><Pause className="h-3 w-3" />Mettre en pause</>}</Button>
-              </div>
-              <div className="mt-1 text-xs text-muted-foreground">{st.paused ? "En pause" : st.active ? "Actif" : "Désactivé"} · {acts.length} action(s) récentes</div>
-              <ul className="mt-2 space-y-1 text-xs">{acts.map((x) => <li key={x.id} className="truncate">• {x.text}</li>)}</ul>
-            </div>
-          );
-        })}
-      </PopoverContent>
-    </Popover>
-  );
-}
