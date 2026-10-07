@@ -10,14 +10,29 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BaseDeConnaissanceRouteImport } from './routes/base-de-connaissance'
+import { Route as LivraisonsRouteImport } from './routes/livraisons'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ProduitsRouteImport } from './routes/produits'
+import { Route as StockRouteImport } from './routes/stock'
 import { Route as CommandesIndexRouteImport } from './routes/commandes.index'
 import { Route as CommandesIdRouteImport } from './routes/commandes.$id'
+import { Route as SavIndexRouteImport } from './routes/sav.index'
+import { Route as SavIdRouteImport } from './routes/sav.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BaseDeConnaissanceRoute = BaseDeConnaissanceRouteImport.update({
+  id: '/base-de-connaissance',
+  path: '/base-de-connaissance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LivraisonsRoute = LivraisonsRouteImport.update({
+  id: '/livraisons',
+  path: '/livraisons',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -30,6 +45,11 @@ const ProduitsRoute = ProduitsRouteImport.update({
   path: '/produits',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StockRoute = StockRouteImport.update({
+  id: '/stock',
+  path: '/stock',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CommandesIndexRoute = CommandesIndexRouteImport.update({
   id: '/commandes/',
   path: '/commandes/',
@@ -40,44 +60,104 @@ const CommandesIdRoute = CommandesIdRouteImport.update({
   path: '/commandes/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SavIndexRoute = SavIndexRouteImport.update({
+  id: '/sav/',
+  path: '/sav/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SavIdRoute = SavIdRouteImport.update({
+  id: '/sav/$id',
+  path: '/sav/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/base-de-connaissance': typeof BaseDeConnaissanceRoute
+  '/livraisons': typeof LivraisonsRoute
   '/login': typeof LoginRoute
   '/produits': typeof ProduitsRoute
+  '/stock': typeof StockRoute
   '/commandes/$id': typeof CommandesIdRoute
+  '/sav/$id': typeof SavIdRoute
   '/commandes/': typeof CommandesIndexRoute
+  '/sav/': typeof SavIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/base-de-connaissance': typeof BaseDeConnaissanceRoute
+  '/livraisons': typeof LivraisonsRoute
   '/login': typeof LoginRoute
   '/produits': typeof ProduitsRoute
+  '/stock': typeof StockRoute
   '/commandes/$id': typeof CommandesIdRoute
+  '/sav/$id': typeof SavIdRoute
   '/commandes': typeof CommandesIndexRoute
+  '/sav': typeof SavIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/base-de-connaissance': typeof BaseDeConnaissanceRoute
+  '/livraisons': typeof LivraisonsRoute
   '/login': typeof LoginRoute
   '/produits': typeof ProduitsRoute
+  '/stock': typeof StockRoute
   '/commandes/$id': typeof CommandesIdRoute
+  '/sav/$id': typeof SavIdRoute
   '/commandes/': typeof CommandesIndexRoute
+  '/sav/': typeof SavIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/produits' | '/commandes/$id' | '/commandes/'
+  fullPaths:
+    | '/'
+    | '/base-de-connaissance'
+    | '/livraisons'
+    | '/login'
+    | '/produits'
+    | '/stock'
+    | '/commandes/$id'
+    | '/sav/$id'
+    | '/commandes/'
+    | '/sav/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/produits' | '/commandes/$id' | '/commandes'
+  to:
+    | '/'
+    | '/base-de-connaissance'
+    | '/livraisons'
+    | '/login'
+    | '/produits'
+    | '/stock'
+    | '/commandes/$id'
+    | '/sav/$id'
+    | '/commandes'
+    | '/sav'
   id:
-    '__root__' | '/' | '/login' | '/produits' | '/commandes/$id' | '/commandes/'
+    | '__root__'
+    | '/'
+    | '/base-de-connaissance'
+    | '/livraisons'
+    | '/login'
+    | '/produits'
+    | '/stock'
+    | '/commandes/$id'
+    | '/sav/$id'
+    | '/commandes/'
+    | '/sav/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BaseDeConnaissanceRoute: typeof BaseDeConnaissanceRoute
+  LivraisonsRoute: typeof LivraisonsRoute
   LoginRoute: typeof LoginRoute
   ProduitsRoute: typeof ProduitsRoute
+  StockRoute: typeof StockRoute
   CommandesIdRoute: typeof CommandesIdRoute
+  SavIdRoute: typeof SavIdRoute
   CommandesIndexRoute: typeof CommandesIndexRoute
+  SavIndexRoute: typeof SavIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -87,6 +167,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/base-de-connaissance': {
+      id: '/base-de-connaissance'
+      path: '/base-de-connaissance'
+      fullPath: '/base-de-connaissance'
+      preLoaderRoute: typeof BaseDeConnaissanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/livraisons': {
+      id: '/livraisons'
+      path: '/livraisons'
+      fullPath: '/livraisons'
+      preLoaderRoute: typeof LivraisonsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -103,6 +197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProduitsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/stock': {
+      id: '/stock'
+      path: '/stock'
+      fullPath: '/stock'
+      preLoaderRoute: typeof StockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/commandes/': {
       id: '/commandes/'
       path: '/commandes'
@@ -117,15 +218,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommandesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sav/': {
+      id: '/sav/'
+      path: '/sav'
+      fullPath: '/sav/'
+      preLoaderRoute: typeof SavIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sav/$id': {
+      id: '/sav/$id'
+      path: '/sav/$id'
+      fullPath: '/sav/$id'
+      preLoaderRoute: typeof SavIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BaseDeConnaissanceRoute: BaseDeConnaissanceRoute,
+  LivraisonsRoute: LivraisonsRoute,
   LoginRoute: LoginRoute,
   ProduitsRoute: ProduitsRoute,
+  StockRoute: StockRoute,
   CommandesIdRoute: CommandesIdRoute,
+  SavIdRoute: SavIdRoute,
   CommandesIndexRoute: CommandesIndexRoute,
+  SavIndexRoute: SavIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
