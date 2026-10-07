@@ -13,13 +13,13 @@ import { useStore, nowMs, effectivePrice, promoActive, availableOf, stockStatus,
 import type { Product } from "@/lib/types";
 import { dh, dateFr, dateTimeFr, pct } from "@/lib/format";
 import { DataTable } from "@/components/bi/DataTable";
-import { PageHeader, StatusBadge, Tabs, ProductThumb, StockBar, Pill, Card, AgentBadge } from "@/components/bi/ui";
+import { PageHeader, StatusBadge, Tabs, ProductThumb, StockBar, Pill, Card, SourceBadge } from "@/components/bi/ui";
 import { useDrawers } from "@/components/bi/drawers";
 
 type Tab = "catalogue" | "import" | "historique" | "categories";
 export const Route = createFileRoute("/produits")({
   validateSearch: (s: Record<string, unknown>): { onglet?: Tab; produit?: string } => ({ onglet: (s.onglet as Tab) || undefined, produit: s.produit as string | undefined }),
-  head: () => ({ meta: [{ title: "Produits & Prix — Belle Image" }, { name: "description", content: "Catalogue, import Excel des prix et historique." }, { property: "og:title", content: "Produits & Prix — Belle Image" }, { property: "og:description", content: "Gestion du catalogue et des prix." }] }),
+  head: () => ({ meta: [{ property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }, { title: "Produits & Prix — Belle Image" }, { name: "description", content: "Catalogue, import Excel des prix et historique." }, { property: "og:title", content: "Produits & Prix — Belle Image" }, { property: "og:description", content: "Gestion du catalogue et des prix." }] }),
   component: Products,
 });
 
@@ -43,7 +43,7 @@ function Catalogue({ openId }: { openId?: string }) {
   const [edit, setEdit] = useState<Product | null>(null); const [cards, setCards] = useState(false);
   const now = nowMs(db);
   useEffect(() => { if (openId) setEdit(db.products.find((p) => p.id === openId) ?? null); }, [openId]); // eslint-disable-line
-  const blank = (): Product => ({ id: `p${Date.now()}`, ref: "", name: "", nameAr: "", brand: "Samsung", category: "Électroménager", sub: "Réfrigérateurs", price: 0, stock: 0, threshold: 3, location: "Magasin", status: "Brouillon", agentVisible: false, warrantyMonths: 24, description: "", deliveryDays: 2 });
+  const blank = (): Product => ({ id: `p${Date.now()}`, ref: "", name: "", nameAr: "", brand: "Samsung", category: "Électroménager", sub: "Réfrigérateurs", price: 0, stock: 0, threshold: 3, location: "Magasin", status: "Brouillon", warrantyMonths: 24, description: "", deliveryDays: 2 });
   return (
     <>
       <DataTable rows={db.products} exportName="catalogue" onRow={setEdit}
@@ -68,7 +68,6 @@ function Catalogue({ openId }: { openId?: string }) {
           { key: "price", label: "Prix TTC", sort: (p) => effectivePrice(p, now), exp: (p) => effectivePrice(p, now), render: (p) => promoActive(p, now) ? <div><b className="text-brand">{dh(effectivePrice(p, now))}</b><div className="text-xs text-muted-foreground line-through">{dh(p.price)}</div></div> : <b>{dh(p.price)}</b> },
           { key: "stock", label: "Disponible", sort: (p) => availableOf(db, p), render: (p) => <div className="flex items-center gap-2"><StockBar value={availableOf(db, p)} max={20} /><span>{availableOf(db, p)}</span></div> },
           { key: "status", label: "Statut", render: (p) => <StatusBadge s={p.status} /> },
-          { key: "agent", label: "Agent", render: (p) => <span onClick={(e) => e.stopPropagation()}><Switch checked={p.agentVisible} onCheckedChange={(v) => mut((d) => { d.products.find((x) => x.id === p.id)!.agentVisible = v; })} aria-label="Publié pour l'Agent Catalogue" /></span> },
         ]} />
       <ProductEditor p={edit} onClose={() => setEdit(null)} />
     </>
@@ -94,7 +93,6 @@ function ProductEditor({ p, onClose }: { p: Product | null; onClose: () => void 
       <SheetContent className="w-full overflow-y-auto sm:max-w-2xl">
         <SheetHeader><SheetTitle className="font-display text-2xl">{f.name || "Nouveau produit"}</SheetTitle></SheetHeader>
         <div className="space-y-6 px-4 pb-6 text-sm">
-          <div className="rounded-xl border border-brand/20 bg-accent/40 p-3 text-xs"><Bot className="mr-1 inline h-3 w-3 text-brand" /><b>Données lues par l'agent :</b> prix {dh(effectivePrice(f, now))} · stock affiché « {availableOf(db, f) <= 0 ? "indisponible" : availableOf(db, f) <= f.threshold ? "bientôt épuisé" : "disponible"} » · {f.agentVisible ? "publié" : "non publié"} · synchro {dateTimeFr(now)}</div>
           <section className="grid gap-3 sm:grid-cols-2">
             <h3 className="font-display text-lg font-semibold sm:col-span-2">Général</h3>
             <div><Label>Désignation</Label><Input value={f.name} onChange={(e) => set({ name: e.target.value })} /></div>
@@ -133,7 +131,7 @@ function ProductEditor({ p, onClose }: { p: Product | null; onClose: () => void 
           <div className="flex gap-2">
             <Button onClick={submit}>Enregistrer</Button>
             <Button variant="outline" onClick={() => setF({ ...f, id: `p${Date.now()}`, ref: f.ref + "-COPIE", status: "Brouillon" })}>Dupliquer</Button>
-            <Button variant="outline" onClick={() => { const r = save({ ...f, status: "Archivé", agentVisible: false }); r.ok ? (toast.success("Produit archivé"), onClose()) : toast.error(r.error); }}>Archiver</Button>
+            <Button variant="outline" onClick={() => { const r = save({ ...f, status: "Archivé" }); r.ok ? (toast.success("Produit archivé"), onClose()) : toast.error(r.error); }}>Archiver</Button>
           </div>
         </div>
       </SheetContent>
@@ -269,7 +267,7 @@ function History() {
         { key: "p", label: "Produit", render: (h) => <span className="font-semibold">{pn(h.productId)}</span>, exp: (h) => pn(h.productId) },
         { key: "c", label: "Ancien → nouveau", render: (h) => <span className="tnum">{dh(h.old)} → <b>{dh(h.new)}</b></span>, exp: (h) => `${h.old} → ${h.new}` },
         { key: "v", label: "Variation", render: (h) => <span className={h.new < h.old ? "text-brand" : "text-success"}>{pct(((h.new - h.old) / h.old) * 100)}</span>, sort: (h) => (h.new - h.old) / h.old },
-        { key: "o", label: "Origine", render: (h) => h.origin === "WhatsApp Admin" ? <AgentBadge agent="Agent Admin Prix" /> : <Pill>{h.origin}</Pill>, exp: (h) => h.origin },
+        { key: "o", label: "Origine", render: (h) => <Pill>{h.origin}</Pill>, exp: (h) => h.origin },
         { key: "a", label: "Auteur", render: (h) => <span className="tnum text-xs">{h.author}</span>, exp: (h) => h.author },
         { key: "l", label: "Lot", render: (h) => h.batchId ? <button className="text-xs text-brand" onClick={() => nav({ to: "/produits", search: { onglet: "import" } })}>{db.imports.find((b) => b.id === h.batchId)?.file ?? "lot"}</button> : "" },
         { key: "x", label: "", render: (h) => (

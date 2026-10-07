@@ -8,13 +8,13 @@ import { useStore, orderTotal, subtotal, ORDER_FLOW } from "@/lib/store";
 import type { OrderStatus } from "@/lib/types";
 import { dh, dateTimeFr, dayFr } from "@/lib/format";
 import { orderPdf } from "@/lib/pdf";
-import { Card, StatusBadge, AgentBadge, Pill } from "@/components/bi/ui";
+import { Card, StatusBadge, SourceBadge, Pill } from "@/components/bi/ui";
 import { ClientLink, useDrawers } from "@/components/bi/drawers";
 import { PlanDialog, CollectDialog } from "@/components/bi/delivery-dialogs";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/commandes/$id")({
-  head: () => ({ meta: [{ title: "Fiche commande — Belle Image" }, { name: "description", content: "Détail d'une commande Belle Image." }, { property: "og:title", content: "Fiche commande — Belle Image" }, { property: "og:description", content: "Détail de commande." }] }),
+  head: () => ({ meta: [{ property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }, { title: "Fiche commande — Belle Image" }, { name: "description", content: "Détail d'une commande Belle Image." }, { property: "og:title", content: "Fiche commande — Belle Image" }, { property: "og:description", content: "Détail de commande." }] }),
   component: OrderDetail,
 });
 const FLOW: OrderStatus[] = ["Nouvelle", "Confirmée", "En préparation", "Prête", "En livraison", "Livrée & encaissée"];
@@ -36,7 +36,7 @@ function OrderDetail() {
       <button onClick={() => nav({ to: "/commandes" })} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" />Commandes</button>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="flex flex-wrap items-center gap-2"><h1 className="font-display text-4xl font-semibold">{o.num}</h1><StatusBadge s={o.status} pulse={o.status === "Nouvelle"} />{o.source === "WhatsApp Agent Catalogue" && <AgentBadge agent="Créée par l'IA — à confirmer" />}</div>
+          <div className="flex flex-wrap items-center gap-2"><h1 className="font-display text-4xl font-semibold">{o.num}</h1><StatusBadge s={o.status} pulse={o.status === "Nouvelle"} />{o.source === "WhatsApp" && <SourceBadge source="À confirmer" />}</div>
           <p className="mt-1 text-sm text-muted-foreground">{o.source} · {dateTimeFr(o.createdAt)} · {o.mode}</p>
         </div>
         <Card className="p-4 text-right"><div className="text-xs uppercase text-muted-foreground">{o.status === "Livrée & encaissée" ? "Encaissé" : "À payer à la livraison"}</div><div className="font-display text-3xl font-semibold text-brand tnum">{dh(orderTotal(o))}</div></Card>
@@ -58,7 +58,7 @@ function OrderDetail() {
       </div>
       {o.missing.length > 0 && (
         <Card className="border-warning/40 bg-warning/5">
-          <p className="text-sm font-semibold text-warning">Champs manquants signalés par l'IA : {o.missing.join(", ")}</p>
+          <p className="text-sm font-semibold text-warning">Informations manquantes : {o.missing.join(", ")}</p>
           <div className="mt-2 flex gap-2"><Input value={addr} onChange={(e) => setAddr(e.target.value)} placeholder="Adresse complète" /><Button onClick={() => { if (addr.trim().length < 5) return toast.error("Adresse trop courte"); st.updateOrderClient(o.id, { address: addr.trim() }); toast.success("Adresse complétée"); }}>Enregistrer</Button></div>
         </Card>
       )}

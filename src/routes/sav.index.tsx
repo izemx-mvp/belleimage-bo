@@ -10,13 +10,13 @@ import { useStore, warrantyOf, nowMs } from "@/lib/store";
 import type { Ticket, TicketStatus } from "@/lib/types";
 import { dateFr } from "@/lib/format";
 import { DataTable } from "@/components/bi/DataTable";
-import { PageHeader, StatusBadge, AgentBadge, Pill } from "@/components/bi/ui";
+import { PageHeader, StatusBadge, SourceBadge, Pill } from "@/components/bi/ui";
 import { ClientLink } from "@/components/bi/drawers";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/sav/")({
   validateSearch: (s: Record<string, unknown>): { nouveau?: string; commande?: string } => ({ nouveau: s.nouveau as string | undefined, commande: s.commande as string | undefined }),
-  head: () => ({ meta: [{ title: "Réclamations SAV — Belle Image" }, { name: "description", content: "Tickets SAV, garanties et interventions." }, { property: "og:title", content: "Réclamations SAV — Belle Image" }, { property: "og:description", content: "Service après-vente Belle Image." }] }),
+  head: () => ({ meta: [{ property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }, { title: "Réclamations SAV — Belle Image" }, { name: "description", content: "Tickets SAV, garanties et interventions." }, { property: "og:title", content: "Réclamations SAV — Belle Image" }, { property: "og:description", content: "Service après-vente Belle Image." }] }),
   component: Sav,
 });
 export const T_STATUSES: TicketStatus[] = ["Nouvelle", "En analyse", "Technicien assigné", "Intervention planifiée", "Résolue", "Clôturée", "Refusée — hors garantie"];
@@ -46,7 +46,7 @@ function Sav() {
               <div key={t.id} draggable onDragStart={(e) => e.dataTransfer.setData("id", t.id)} onClick={() => open(t)} className="cursor-grab rounded-xl border bg-card p-3 text-sm shadow-soft card-lift">
                 <div className="flex justify-between"><b>{t.num}</b><span className={cn("text-xs", age(t) > 4 && !["Clôturée", "Résolue"].includes(t.status) ? "font-bold text-brand" : "text-muted-foreground")}>{age(t)} j</span></div>
                 <ClientLink id={t.clientId} /><div className="text-xs text-muted-foreground">{pn(t).name} · {pn(t).brand}</div>
-                <div className="mt-2 flex flex-wrap gap-1"><Pill>{t.type}</Pill><WarrantyPill t={t} />{t.source.includes("Agent") && <AgentBadge agent="Agent SAV" />}{t.source.startsWith("Avis") && <Pill tone="warning">Avis ≤ 2/5</Pill>}</div>
+                 <div className="mt-2 flex flex-wrap gap-1"><Pill>{t.type}</Pill><WarrantyPill t={t} />{t.source.startsWith("Avis") && <Pill tone="warning">Avis ≤ 2/5</Pill>}</div>
               </div>))}</div>
           </div>); })}</div>
       ) : (

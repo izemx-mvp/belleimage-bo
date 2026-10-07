@@ -1,4 +1,3 @@
-export type Agent = "Agent Catalogue" | "Agent SAV" | "Agent Admin Prix";
 export type Sub =
   | "Réfrigérateurs" | "Lave-linge" | "Cuisson" | "TV & image" | "Climatisation" | "Petit électroménager"
   | "Salons" | "Chambres" | "Salles à manger" | "Rangement";
@@ -8,7 +7,7 @@ export interface Product {
   id: string; ref: string; name: string; nameAr: string; brand: string; category: Category; sub: Sub;
   price: number; promo?: { price: number; start: string; end: string };
   stock: number; threshold: number; location: "Magasin" | "Dépôt";
-  status: "Actif" | "Brouillon" | "Archivé"; agentVisible: boolean; warrantyMonths: number;
+  status: "Actif" | "Brouillon" | "Archivé"; warrantyMonths: number;
   description: string; imageUrl?: string; purchasePrice?: number; deliveryDays: number;
 }
 export interface Client { id: string; name: string; phone: string; city: string; quartier: string; address: string; landmark?: string; lang: "FR" | "AR" }
@@ -16,7 +15,7 @@ export interface OrderLine { productId: string; name: string; qty: number; unitP
 export type OrderStatus = "Nouvelle" | "Confirmée" | "En préparation" | "Prête" | "En livraison" | "Livrée & encaissée" | "Annulée" | "Retournée";
 export interface Order {
   id: string; num: string; clientId: string; lines: OrderLine[]; fee: number; status: OrderStatus;
-  source: "Magasin" | "WhatsApp Agent Catalogue" | "Téléphone"; mode: "Livraison à domicile" | "Retrait en magasin";
+  source: "Magasin" | "WhatsApp" | "Téléphone"; mode: "Livraison à domicile" | "Retrait en magasin";
   createdAt: string; missing: string[]; notes: string; owner: string; transcriptId?: string;
   history: { at: string; text: string; actor: string }[]; cancelReason?: string; deliveredAt?: string;
 }
@@ -28,7 +27,7 @@ export interface Payment { id: string; num: string; orderId: string; driverId: s
 export interface Driver { id: string; name: string; phone: string; vehicle: string; status: "Disponible" | "En tournée" | "Absent" }
 export interface Zone { id: string; name: string; fee: number | null; freeFrom?: number; cities: string[] }
 export type TicketStatus = "Nouvelle" | "En analyse" | "Technicien assigné" | "Intervention planifiée" | "Résolue" | "Clôturée" | "Refusée — hors garantie";
-export interface Msg { from: "client" | "agent" | "human" | "admin"; text: string; at: string; image?: boolean; buttons?: string[] }
+export interface Msg { from: "client" | "team" | "human" | "admin"; text: string; at: string; image?: boolean; buttons?: string[] }
 export interface Ticket {
   id: string; num: string; clientId: string; orderId?: string; productId: string; type: string; status: TicketStatus;
   priority: "Basse" | "Normale" | "Haute"; createdAt: string; source: string; summary: string; description: string;
@@ -37,7 +36,7 @@ export interface Ticket {
 }
 export interface PriceChange { id: string; productId: string; old: number; new: number; origin: "Import Excel" | "WhatsApp Admin" | "Manuel" | "Fin de promo" | "Annulation"; author: string; at: string; batchId?: string; transcriptId?: string; undone?: boolean }
 export interface StockMove { id: string; productId: string; type: "Entrée fournisseur" | "Sortie livraison" | "Retour client" | "Ajustement" | "Inventaire"; qty: number; before: number; after: number; reason: string; at: string; author: string }
-export interface Activity { id: string; at: string; actor: string; kind: "Commandes" | "Stock" | "Prix" | "Livraisons" | "SAV" | "Agents" | "Import"; text: string }
+export interface Activity { id: string; at: string; actor: string; kind: "Commandes" | "Stock" | "Prix" | "Livraisons" | "SAV" | "Messages" | "Import"; text: string }
 export interface Notif { id: string; at: string; text: string; read: boolean; level: "info" | "warn" | "danger" | "success"; link?: string }
 export interface Transcript { id: string; title: string; clientName: string; phone: string; messages: Msg[] }
 export interface ImportBatch { id: string; file: string; at: string; author: string; applied: number; ignored: number; errors: number; changes: { productId: string; old: number; new: number }[]; undone: boolean }

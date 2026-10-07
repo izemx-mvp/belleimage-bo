@@ -1,24 +1,20 @@
 import { useState, type ReactNode } from "react";
 import {
   Refrigerator, WashingMachine, CookingPot, Tv, AirVent, Blend, Sofa, BedDouble, UtensilsCrossed, Archive,
-  CircleDot, CheckCircle2, Package, PackageCheck, Truck, BadgeCheck, XCircle, Undo2, Clock, AlertTriangle, Wrench, CalendarClock, Lock, Banknote, Ban, Bot,
+   CircleDot, CheckCircle2, Package, PackageCheck, Truck, BadgeCheck, XCircle, Undo2, Clock, AlertTriangle, Wrench, CalendarClock, Lock, Banknote, Ban,
 } from "lucide-react";
 import type { Product, Sub } from "@/lib/types";
+import logoAsset from "@/assets/belle-image-logo.png.asset.json";
 import { cn } from "@/lib/utils";
 
-export const LOGO_URL = "https://belleimage.izemxlab.com/assets/belle-image-logo-Us-b5llW.png";
+export const LOGO_URL = logoAsset.url;
 export const SHOWROOM_URL = "https://belleimage.izemxlab.com/assets/showroom-1-DppMc5qv.png";
 
 export function Logo({ light, className }: { light?: boolean; className?: string }) {
   const [err, setErr] = useState(false);
-  if (err)
-    return (
-      <div className={cn("flex items-baseline gap-2", className)}>
-        <span className={cn("font-display text-xl font-semibold", light ? "text-sidebar-foreground" : "text-foreground")}>Belle Image</span>
-        <span className="font-arabic text-sm text-brand" dir="rtl">أحسن صورة</span>
-      </div>
-    );
-  return <img src={LOGO_URL} alt="Belle Image — أحسن صورة" className={cn("h-9 w-auto object-contain", light && "brightness-0 invert", className)} onError={() => setErr(true)} />;
+  return <div className={cn("flex shrink-0 items-center justify-center rounded-xl bg-card p-2", light && "mx-auto", className)}>
+    {err ? <span className="text-sm text-muted-foreground">Logo indisponible</span> : <img src={LOGO_URL} alt="Belle Image — أحسن صورة" className="h-28 w-28 object-contain" onError={() => setErr(true)} />}
+  </div>;
 }
 
 const SUB_ICON: Record<Sub, typeof Tv> = {
@@ -27,14 +23,14 @@ const SUB_ICON: Record<Sub, typeof Tv> = {
 };
 
 export function ProductThumb({ p, className, square }: { p: Product; className?: string; square?: boolean }) {
-  const srcs = [`/products/${p.ref.toLowerCase()}.jpg`, p.imageUrl].filter(Boolean) as string[];
+   const srcs = [p.imageUrl, `/products/${p.ref.toLowerCase()}.jpg`].filter((src): src is string => Boolean(src));
   const [i, setI] = useState(0);
   const Icon = SUB_ICON[p.sub];
   const fallback = i >= srcs.length;
   return (
     <div className={cn("relative overflow-hidden rounded-lg bg-accent", square ? "aspect-square" : "aspect-[4/3]", className)}>
       {!fallback ? (
-        <img src={srcs[i]} alt={p.name} loading="lazy" className="h-full w-full object-cover" onError={() => setI(i + 1)} />
+         <img src={srcs[i]} alt={p.name} loading="lazy" className="h-full w-full object-contain bg-card" onError={() => setI((current) => current + 1)} />
       ) : (
         <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-brand/70">
           <Icon strokeWidth={1.25} className="h-1/2 w-1/2 max-h-16 max-w-16" />
@@ -76,8 +72,8 @@ export function StatusBadge({ s, pulse }: { s: string; pulse?: boolean }) {
 export function Pill({ tone = "muted", children, className }: { tone?: Tone; children: ReactNode; className?: string }) {
   return <span className={cn("inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-semibold", TONES[tone], className)}>{children}</span>;
 }
-export function AgentBadge({ agent }: { agent: string }) {
-  return <Pill tone="brand" className="shadow-[0_0_12px_-2px_var(--brand)]"><Bot className="h-3 w-3" />{agent}</Pill>;
+export function SourceBadge({ source }: { source: string }) {
+  return <Pill tone="brand" className="shadow-[0_0_12px_-2px_var(--brand)]">{source}</Pill>;
 }
 
 export function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: string; actions?: ReactNode }) {

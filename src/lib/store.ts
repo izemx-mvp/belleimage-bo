@@ -91,7 +91,6 @@ interface State {
   updateTicket: (ticketId: string, patch: Partial<Ticket>) => void;
   replyTicket: (ticketId: string, text: string) => void;
   addReview: (orderId: string, rating: number, comment: string) => void;
-  runDemoStep: () => string | null;
   advanceDays: (n: number) => void;
 }
 
@@ -116,6 +115,32 @@ function addMsgToClientTranscript(d: DB, clientId: string, msg: Msg, orderId?: s
     d.transcripts.push(t); if (o) o.transcriptId = t.id;
   }
   t.messages.push(msg);
+}
+
+export function migrateCatalogue(persisted: unknown) {
+  const state = persisted as { db?: DB; session?: State["session"] };
+  if (!state.db) return { db: buildSeed(), session: state.session ?? null };
+  const db = structuredClone(state.db);
+  const fresh = buildSeed();
+  const mapping = new Map(db.products.map((old, i) => {
+    const category = fresh.products.filter((p) => p.sub === old.sub);
+    const product = fresh.products.find((p) => p.ref === old.ref) ?? category[i % category.length] ?? fresh.products[0];
+    return [old.id, product];
+  }));
+  db.orders.forEach((o) => o.lines.forEach((line) => {
+    const p = mapping.get(line.productId);
+    if (p) { line.productId = p.id; line.name = p.name; }
+  }));
+  [db.tickets, db.priceHistory, db.movements].forEach((rows) => rows.forEach((row) => {
+    const p = mapping.get(row.productId); if (p) row.productId = p.id;
+  }));
+  db.imports.forEach((batch) => batch.changes.forEach((row) => {
+    const p = mapping.get(row.productId); if (p) row.productId = p.id;
+  }));
+  db.products = fresh.products; db.brands = fresh.brands; db.subs = fresh.subs;
+  db.settings = { ...db.settings, lowRatingTicket: true, demoEvents: false };
+  const sanitized = JSON.parse(JSON.stringify(db).replace(/Agent Catalogue/g, "Équipe commerciale").replace(/Agent SAV/g, "Équipe SAV").replace(/Agent Admin Prix/g, "Administration").replace(/WhatsApp Agent/g, "WhatsApp").replace(/Agent IA/g, "Belle Image").replace(/\"agent\"/g, '\"team\"')) as DB;
+  return { db: sanitized, session: state.session ?? null };
 }
 
 export const useStore = create<State>()(
@@ -174,7 +199,7 @@ export const useStore = create<State>()(
           log(d, actor, "Commandes", `${o.num} : ${from} → ${to}.`);
           if (to === "Confirmée") {
             const c = d.clients.find((x) => x.id === o.clientId)!;
-            addMsgToClientTranscript(d, c.id, { from: "agent", text: d.templates[0].text.replace("{client}", c.name).replace("{commande}", o.num), at: iso(nowMs(d)) }, o.id);
+            addMsgToClientTranscript(d, c.id, { from: "team", text: d.templates[0].text.replace("{client}", c.name).replace("{commande}", o.num), at: iso(nowMs(d)) }, o.id);
             o.lines.forEach((l) => checkStockAlert(d, l.productId));
           }
           return OK(to === "Confirmée" ? "Commande confirmée — stock réservé, message WhatsApp envoyé." : `Statut mis à jour : ${to}`);
@@ -236,7 +261,7 @@ export const useStore = create<State>()(
           dl.status = "En route"; o.status = "En livraison"; o.history.push({ at: iso(nowMs(d)), text: "Prête → En livraison", actor: "Salma" });
           const drv = d.drivers.find((x) => x.id === dl.driverId)!; drv.status = "En tournée";
           const window = dl.slot === "Matin" ? "entre 09:00 et 13:00" : dl.slot === "Après-midi" ? "entre 14:00 et 16:00" : "entre 18:00 et 21:00";
-          addMsgToClientTranscript(d, o.clientId, { from: "agent", text: `Votre commande ${o.num} est en route avec ${drv.name}. Arrivée prévue ${window}.`, at: iso(nowMs(d)) }, o.id);
+          addMsgToClientTranscript(d, o.clientId, { from: "team", text: `Votre commande ${o.num} est en route avec ${drv.name}. Arrivée prévue ${window}.`, at: iso(nowMs(d)) }, o.id);
           log(d, drv.name, "Livraisons", `${dl.num} en route (${o.num}).`);
           return OK("Tournée démarrée — message « en route » envoyé au client.");
         }),
@@ -264,7 +289,7 @@ export const useStore = create<State>()(
             d.movements.unshift({ id: id("m"), productId: pr.id, type: "Sortie livraison", qty: -l.qty, before: pr.stock, after: pr.stock - l.qty, reason: o.num, at: now, author: "Système" });
             pr.stock -= l.qty;
           });
-          addMsgToClientTranscript(d, o.clientId, { from: "agent", text: d.templates[5].text, at: now, buttons: ["1", "2", "3", "4", "5"] }, o.id);
+          addMsgToClientTranscript(d, o.clientId, { from: "team", text: d.templates[5].text, at: now, buttons: ["1", "2", "3", "4", "5"] }, o.id);
           log(d, d.drivers.find((x) => x.id === dl.driverId)!.name, "Livraisons", `Livraison ${dl.num} encaissée : ${fmt(received)} DH.`);
           notify(d, `${o.num} livrée & encaissée (${fmt(received)} DH)`, "success", `/commandes/${o.id}`);
           return OK("Livrée & encaissée");
@@ -284,7 +309,7 @@ export const useStore = create<State>()(
           if (price === p.price) return ERR("Le prix est identique.");
           d.priceHistory.unshift({ id: id("h"), productId, old: p.price, new: price, origin, author, at: iso(nowMs(d)), ...extra });
           const old = p.price; p.price = price;
-          log(d, origin === "WhatsApp Admin" ? "Agent Admin Prix" : author, "Prix", `${origin === "WhatsApp Admin" ? "Agent Admin Prix a modifié" : "Prix modifié pour"} ${p.name} : ${fmt(old)} → ${fmt(price)} DH.`);
+          log(d, origin === "WhatsApp Admin" ? "Administration" : author, "Prix", `${origin === "WhatsApp Admin" ? "Administration a modifié" : "Prix modifié pour"} ${p.name} : ${fmt(old)} → ${fmt(price)} DH.`);
           return OK(`Prix mis à jour : ${fmt(price)} DH`);
         }),
         undoPrice: (hid, force) => run((d) => {
@@ -360,7 +385,7 @@ export const useStore = create<State>()(
         setThreshold: (pid, v) => mut((d) => { d.products.find((x) => x.id === pid)!.threshold = Math.max(0, v); }),
         sendWhatsApp: (clientId, text, ref) => mut((d) => {
           addMsgToClientTranscript(d, clientId, { from: "human", text, at: iso(nowMs(d)) }, ref?.orderId, ref?.ticketId);
-          log(d, "Salma", "Agents", `Message WhatsApp envoyé à ${d.clients.find((c) => c.id === clientId)!.name}.`);
+          log(d, "Salma", "Messages", `Message WhatsApp envoyé à ${d.clients.find((c) => c.id === clientId)!.name}.`);
         }),
 
         createTicket: (t, actor = "Salma") => {
@@ -369,7 +394,7 @@ export const useStore = create<State>()(
             tid = id("s");
             const num = `SAV-${String(d.tickets.length + 1).padStart(4, "0")}`;
             d.tickets.unshift({ id: tid, num, status: "Nouvelle", priority: "Normale", createdAt: iso(nowMs(d)), source: "Magasin", summary: t.description, humanInCharge: false, messages: [], photos: 0, notes: "", owner: "Houda (SAV)", ...t } as Ticket);
-            log(d, actor, "SAV", `Réclamation ${num} créée${actor.startsWith("Agent") ? ` par l'${actor}` : ""}.`);
+            log(d, actor, "SAV", `Réclamation ${num} créée.`);
             notify(d, `Nouvelle réclamation ${num}`, "warn", `/sav/${tid}`);
             return OK(`Réclamation ${num} créée`);
           });
@@ -383,7 +408,7 @@ export const useStore = create<State>()(
           if (to === "Refusée — hors garantie" && !(extra.refuseReason || t.refuseReason)) return ERR("Motif de refus obligatoire.");
           Object.assign(t, extra); const from = t.status; t.status = to;
           const c = d.clients.find((x) => x.id === t.clientId)!;
-          t.messages.push({ from: t.humanInCharge ? "human" : "agent", text: `Bonjour ${c.name}, votre réclamation ${t.num} est maintenant : ${to}.${to === "Clôturée" ? " Merci de noter notre service de 1 à 5." : ""}`, at: iso(nowMs(d)) });
+          t.messages.push({ from: t.humanInCharge ? "human" : "team", text: `Bonjour ${c.name}, votre réclamation ${t.num} est maintenant : ${to}.${to === "Clôturée" ? " Merci de noter notre service de 1 à 5." : ""}`, at: iso(nowMs(d)) });
           log(d, "Houda", "SAV", `${t.num} : ${from} → ${to}.`);
           return OK(`Statut : ${to}`);
         }),
@@ -391,18 +416,18 @@ export const useStore = create<State>()(
         replyTicket: (tid, text) => mut((d) => {
           const t = d.tickets.find((x) => x.id === tid)!; t.humanInCharge = true;
           t.messages.push({ from: "human", text, at: iso(nowMs(d)) });
-          log(d, "Houda", "SAV", `Réponse humaine sur ${t.num} — agent en pause sur ce ticket.`);
+          log(d, "Houda", "SAV", `Réponse de l’équipe sur ${t.num}.`);
         }),
         addReview: (orderId, rating, comment) => {
           let make = false; let o: Order | undefined;
           mut((d) => {
             o = d.orders.find((x) => x.id === orderId)!;
             d.reviews.unshift({ id: id("r"), clientId: o.clientId, orderId, rating, comment, at: iso(nowMs(d)) });
-            make = rating <= 2 && !!d.settings.agents["Agent SAV"].lowRatingTicket;
+            make = rating <= 2 && d.settings.lowRatingTicket;
             notify(d, `Nouvel avis ${rating}/5`, rating <= 2 ? "danger" : "info", "/");
           });
           if (make && o) {
-            const r = get().createTicket({ clientId: o.clientId, orderId, productId: o.lines[0].productId, type: "Livraison", source: "Avis ≤ 2/5", description: `Avis ${rating}/5 : « ${comment} »`, summary: `Le client a noté sa livraison ${rating}/5 : « ${comment} ».` }, "Agent SAV");
+            const r = get().createTicket({ clientId: o.clientId, orderId, productId: o.lines[0].productId, type: "Livraison", source: "Avis ≤ 2/5", description: `Avis ${rating}/5 : « ${comment} »`, summary: `Le client a noté sa livraison ${rating}/5 : « ${comment} ».` }, "Équipe SAV");
             if (r.ok && r.id) mut((d) => { d.reviews[0].ticketId = r.id; });
           }
         },
@@ -416,83 +441,10 @@ export const useStore = create<State>()(
           });
         }),
 
-        runDemoStep: () => {
-          const s = get(); const d0 = s.db; const step = d0.demoStep % 6; const ag = d0.settings.agents;
-          const agentFor = ["Agent Catalogue", "Agent SAV", "Agent Admin Prix", "Agent SAV", "Agent Admin Prix", null][step];
-          if (agentFor && (ag[agentFor].paused || !ag[agentFor].active)) { mut((d) => { d.demoStep++; }); return null; }
-          let text: string | null = null;
-          if (step === 0) {
-            mut((d) => {
-              const c = d.clients[0]; const p = d.products.find((x) => x.ref === "SAM-RT38-INOX")!;
-              if (availableOf(d, p) <= 0) { d.demoStep++; return; }
-              const num = `CMD-2026-${String(Math.max(...d.orders.map((o) => +o.num.slice(-4))) + 1).padStart(4, "0")}`;
-              const price = effectivePrice(p, nowMs(d)); const fee = feeFor(c, price, d.zones) ?? 0;
-              const tid = id("t");
-              d.transcripts.push({ id: tid, title: `Demande de commande — ${num}`, clientName: c.name, phone: c.phone, messages: [
-                { from: "client", text: "Bonsoir, chhal taman dyal frigo Samsung RT38 ? واش كاين التوصيل ل Maamora ?", at: iso(nowMs(d) - 180000) },
-                { from: "agent", text: `Bonsoir ${c.name} 👋 Le ${p.name} est à ${fmt(price)},00 DH TTC, disponible. Livraison à Maamora : ${fee ? fmt(fee) + " DH" : "gratuite"}. Paiement uniquement à la livraison.`, at: iso(nowMs(d) - 170000) },
-                { from: "client", text: "Ok, je le prends. Rue 12, Imm. 4, Maamora.", at: iso(nowMs(d) - 60000) },
-                { from: "agent", text: `Parfait ! J'ai préparé votre demande ${num}. Un conseiller Belle Image va la confirmer très vite.`, at: iso(nowMs(d)), buttons: ["Merci", "Parler à un conseiller"] },
-              ] });
-              const oid = id("o");
-              d.orders.unshift({ id: oid, num, clientId: c.id, lines: [{ productId: p.id, name: p.name, qty: 1, unitPrice: price }], fee, status: "Nouvelle", source: "WhatsApp Agent Catalogue", mode: "Livraison à domicile", createdAt: iso(nowMs(d)), missing: [], notes: "Paiement à la livraison", owner: "Agent Catalogue", transcriptId: tid, history: [{ at: iso(nowMs(d)), text: "Demande créée par l'IA — à confirmer", actor: "Agent Catalogue" }] });
-              log(d, "Agent Catalogue", "Agents", `Agent Catalogue a créé la commande ${num} (à confirmer).`);
-              notify(d, `Agent Catalogue a créé la commande ${num} — à confirmer`, "info", `/commandes/${oid}`);
-              text = `Agent Catalogue a créé la commande ${num}`; d.demoStep++;
-            });
-          } else if (step === 1) {
-            const d = s.db; const c = d.clients[1]; const o = d.orders.find((x) => x.status === "Livrée & encaissée")!;
-            const r = s.createTicket({ clientId: c.id, orderId: o.id, productId: o.lines[0].productId, type: "Produit abîmé", source: "WhatsApp Agent SAV", photos: 1, priority: "Haute",
-              summary: `Le client signale que ${o.lines[0].name} est arrivé abîmé (choc sur le côté). Photo reçue. Sous garantie ✓.`, description: "Choc visible sur le côté gauche à la réception.",
-              messages: [
-                { from: "client", text: "Salam, l'appareil est arrivé avec un choc sur le côté.", at: iso(nowMs(d) - 120000) },
-                { from: "agent", text: "Je suis désolé. Pouvez-vous m'envoyer une photo ?", at: iso(nowMs(d) - 110000) },
-                { from: "client", text: "Voilà", at: iso(nowMs(d) - 60000), image: true },
-                { from: "agent", text: "Merci, garantie vérifiée ✓. Ticket créé, un responsable SAV vous contacte rapidement.", at: iso(nowMs(d)) },
-              ] }, "Agent SAV");
-            mut((x) => { x.demoStep++; });
-            text = r.ok ? r.msg ?? null : null;
-          } else if (step === 2) {
-            const d = s.db; const p = d.products.find((x) => x.ref === "LG-OLED55-C3")!; const target = 4990;
-            if (p.price !== target) {
-              const tid = id("t"); const pct = (((target - p.price) / p.price) * 100).toFixed(1).replace(".", ",");
-              mut((x) => { x.transcripts.push({ id: tid, title: "Admin — modification de prix", clientName: "Salma Berrada (admin)", phone: "+212 6 61 00 00 01", messages: [
-                { from: "admin", text: "Passe la TV LG 55 pouces à 4 990 DH", at: iso(nowMs(x) - 90000) },
-                { from: "agent", text: `${p.name} : ${fmt(p.price)},00 DH → 4 990,00 DH (${pct} %). Variation sous le seuil de ±${x.settings.varThreshold} %. Confirmez-vous ?`, at: iso(nowMs(x) - 85000), buttons: ["OUI", "NON"] },
-                { from: "admin", text: "OUI", at: iso(nowMs(x) - 30000) },
-                { from: "agent", text: "✓ Prix appliqué et tracé dans l'historique.", at: iso(nowMs(x)) },
-              ] }); });
-              s.setPrice(p.id, target, "WhatsApp Admin", "+212 6 61 00 00 01", { transcriptId: tid });
-              mut((x) => notify(x, `Agent Admin Prix : ${p.name} → 4 990 DH`, "info", "/produits?onglet=historique"));
-              text = "Agent Admin Prix a modifié le prix de la TV LG OLED 55\"";
-            }
-            mut((x) => { x.demoStep++; });
-          } else if (step === 3) {
-            const o = s.db.orders.filter((x) => x.status === "Livrée & encaissée")[2];
-            s.addReview(o.id, 2, "Livreur en retard et carton abîmé");
-            mut((x) => { x.demoStep++; });
-            text = "Avis 2/5 reçu — ticket SAV créé";
-          } else if (step === 4) {
-            mut((x) => {
-              log(x, "Agent Admin Prix", "Agents", "Tentative de modification de prix depuis +212 6 99 88 77 66 (non autorisé) — refusée, aucun prix changé.");
-              notify(x, "Sécurité : numéro non autorisé (+212 6 99 88 77 66) a tenté de modifier un prix — refusé", "danger", "/base-de-connaissance?onglet=regles");
-              x.demoStep++;
-            });
-            text = "Tentative de modification de prix refusée (numéro non autorisé)";
-          } else {
-            mut((x) => {
-              const p = x.products.find((pp) => stockStatus(x, pp) === "En stock" && pp.status === "Actif" && pp.stock > 2)!;
-              const target = p.threshold; const delta = target - availableOf(x, p);
-              x.movements.unshift({ id: id("m"), productId: p.id, type: "Ajustement", qty: delta, before: p.stock, after: p.stock + delta, reason: "Ventes comptoir", at: iso(nowMs(x)), author: "Caisse magasin" });
-              p.stock += delta; checkStockAlert(x, p.id); log(x, "Caisse magasin", "Stock", `${p.name} passe sous le seuil (${availableOf(x, p)} disponible).`);
-              text = `Alerte stock : ${p.name}`; x.demoStep++;
-            });
-          }
-          return text;
-        },
+
       };
     },
-    { name: "belle-image-db", version: 1, storage: createJSONStorage(() => localStorage), partialize: (s) => ({ db: s.db, session: s.session }), skipHydration: true },
+    { name: "belle-image-db", version: 2, migrate: (persisted) => migrateCatalogue(persisted), storage: createJSONStorage(() => localStorage), partialize: (s) => ({ db: s.db, session: s.session }), skipHydration: true },
   ),
 );
 

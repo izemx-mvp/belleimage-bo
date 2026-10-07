@@ -13,7 +13,7 @@ import { DataTable } from "@/components/bi/DataTable";
 import { PageHeader, StatusBadge, Tabs, ProductThumb, Card } from "@/components/bi/ui";
 
 export const Route = createFileRoute("/stock")({
-  head: () => ({ meta: [{ title: "Stock — Belle Image" }, { name: "description", content: "Stock, réservations, seuils et mouvements." }, { property: "og:title", content: "Stock — Belle Image" }, { property: "og:description", content: "Suivi du stock magasin et dépôt." }] }),
+  head: () => ({ meta: [{ property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }, { title: "Stock — Belle Image" }, { name: "description", content: "Stock, réservations, seuils et mouvements." }, { property: "og:title", content: "Stock — Belle Image" }, { property: "og:description", content: "Suivi du stock magasin et dépôt." }] }),
   component: Stock,
 });
 

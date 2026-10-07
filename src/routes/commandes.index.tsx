@@ -13,13 +13,13 @@ import { feeFor, zoneFor } from "@/lib/seed";
 import type { Order, OrderStatus, Client } from "@/lib/types";
 import { dh, dateFr } from "@/lib/format";
 import { DataTable } from "@/components/bi/DataTable";
-import { PageHeader, StatusBadge, AgentBadge, Pill } from "@/components/bi/ui";
+import { PageHeader, StatusBadge, SourceBadge, Pill } from "@/components/bi/ui";
 import { ClientLink } from "@/components/bi/drawers";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/commandes/")({
   validateSearch: (s: Record<string, unknown>): { nouveau?: string; statut?: string } => ({ nouveau: s.nouveau as string | undefined, statut: s.statut as string | undefined }),
-  head: () => ({ meta: [
+  head: () => ({ meta: [{ property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }, 
     { title: "Commandes — Belle Image" }, { name: "description", content: "Toutes les commandes Belle Image : magasin, téléphone et WhatsApp." },
     { property: "og:title", content: "Commandes — Belle Image" }, { property: "og:description", content: "Suivi des commandes et confirmations." },
   ] }),
@@ -58,7 +58,7 @@ function Orders() {
             { key: "statut", label: "Statut", options: STATUSES, get: (o) => o.status },
             { key: "ville", label: "Ville", options: [...new Set(db.clients.map((c) => c.city))], get: (o) => cl(o.clientId).city },
             { key: "mode", label: "Mode", options: ["Livraison à domicile", "Retrait en magasin"], get: (o) => o.mode },
-            { key: "source", label: "Source", options: ["Magasin", "WhatsApp Agent Catalogue", "Téléphone"], get: (o) => o.source },
+            { key: "source", label: "Source", options: ["Magasin", "WhatsApp", "Téléphone"], get: (o) => o.source },
           ]}
           cols={[
             { key: "num", label: "N°", render: (o) => <span className="font-semibold">{o.num}</span>, sort: (o) => o.num, exp: (o) => o.num },
@@ -68,7 +68,7 @@ function Orders() {
             { key: "ville", label: "Ville", render: (o) => cl(o.clientId).city, exp: (o) => cl(o.clientId).city },
             { key: "statut", label: "Statut", render: (o) => <StatusBadge s={o.status} pulse={o.status === "Nouvelle"} />, sort: (o) => STATUSES.indexOf(o.status), exp: (o) => o.status },
             { key: "pay", label: "Paiement", render: (o) => o.status === "Livrée & encaissée" ? <Pill tone="success">Encaissé</Pill> : <Pill tone="muted">À la livraison</Pill> },
-            { key: "src", label: "Source", render: (o) => o.source === "WhatsApp Agent Catalogue" ? <AgentBadge agent="Agent Catalogue" /> : o.source, exp: (o) => o.source },
+            { key: "src", label: "Source", render: (o) => o.source, exp: (o) => o.source },
             { key: "date", label: "Date", render: (o) => dateFr(o.createdAt), sort: (o) => o.createdAt, exp: (o) => dateFr(o.createdAt) },
           ]} />
       ) : (
@@ -85,7 +85,7 @@ function Orders() {
                       <div className="flex justify-between"><b>{o.num}</b><span className="tnum">{dh(orderTotal(o))}</span></div>
                       <div className="mt-1"><ClientLink id={o.clientId} /></div>
                       <div className="mt-1 line-clamp-1 text-xs text-muted-foreground">{o.lines.map((l) => l.name).join(", ")}</div>
-                      {o.source === "WhatsApp Agent Catalogue" && <div className="mt-2"><AgentBadge agent="Agent Catalogue" /></div>}
+                      
                     </div>
                   ))}
                 </div>

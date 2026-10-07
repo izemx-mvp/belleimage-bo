@@ -6,13 +6,13 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button";
 import { useStore, nowMs, orderTotal, stockStatus, availableOf } from "@/lib/store";
 import { dh0, dateTimeFr, dateFr } from "@/lib/format";
-import { Card, PageHeader, AgentBadge, SHOWROOM_URL } from "@/components/bi/ui";
+import { Card, PageHeader, SourceBadge, SHOWROOM_URL } from "@/components/bi/ui";
 import { ClientLink } from "@/components/bi/drawers";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
-  head: () => ({ meta: [
-    { title: "Dashboard — Belle Image" }, { name: "description", content: "Activité de Belle Image : ventes, livraisons, SAV et agents IA." },
+  head: () => ({ meta: [{ property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }, 
+    { title: "Dashboard — Belle Image" }, { name: "description", content: "Activité de Belle Image : ventes, livraisons, SAV." },
     { property: "og:title", content: "Dashboard — Belle Image" }, { property: "og:description", content: "Vue d'ensemble de l'activité du magasin." },
   ] }),
   component: Dashboard,
@@ -70,7 +70,7 @@ function Dashboard() {
   const byStatus = useMemo(() => { const m: Record<string, number> = {}; k.ordList.forEach((o) => (m[o.status] = (m[o.status] ?? 0) + 1)); return Object.entries(m).map(([name, v]) => ({ name, v })); }, [k.ordList]);
   const savBrand = useMemo(() => { const m: Record<string, number> = {}; db.tickets.forEach((t) => { const b = db.products.find((p) => p.id === t.productId)!.brand; m[b] = (m[b] ?? 0) + 1; }); return Object.entries(m).map(([name, v]) => ({ name, v })).sort((a, b) => b.v - a.v); }, [db]);
   const savType = useMemo(() => { const m: Record<string, number> = {}; db.tickets.forEach((t) => (m[t.type] = (m[t.type] ?? 0) + 1)); return Object.entries(m).map(([name, v]) => ({ name, v })); }, [db.tickets]);
-  const waTop = useMemo(() => { const m: Record<string, number> = {}; db.orders.filter((o) => o.source === "WhatsApp Agent Catalogue").forEach((o) => o.lines.forEach((l) => (m[l.name] = (m[l.name] ?? 0) + 1))); return Object.entries(m).map(([name, v]) => ({ name: name.slice(0, 26), v })).sort((a, b) => b.v - a.v).slice(0, 6); }, [db.orders]);
+  const waTop = useMemo(() => { const m: Record<string, number> = {}; db.orders.filter((o) => o.source === "WhatsApp").forEach((o) => o.lines.forEach((l) => (m[l.name] = (m[l.name] ?? 0) + 1))); return Object.entries(m).map(([name, v]) => ({ name: name.slice(0, 26), v })).sort((a, b) => b.v - a.v).slice(0, 6); }, [db.orders]);
   const caTrend = useMemo(() => Array.from({ length: 12 }, (_, i) => { const a = from + (i * (now - from)) / 12, b = from + ((i + 1) * (now - from)) / 12; return { name: dateFr(a).slice(0, 5), v: db.payments.filter((p) => p.at && +new Date(p.at) >= a && +new Date(p.at) < b).reduce((s, p) => s + (p.received ?? 0), 0) }; }), [db.payments, from, now]);
 
   const failed = db.deliveries.filter((d) => d.status === "Échec").length;
@@ -123,7 +123,6 @@ function Dashboard() {
         <KPI label="Délai moyen SAV (j)" v={k.resol} to="/sav" />
         <KPI label="Stock bas / rupture" v={k.low + k.out} to="/stock" warn />
         <KPI label="Prix modifiés (7 j)" v={k.priceWeek} to="/produits" s={{ onglet: "historique" }} />
-        <KPI label="Réponse auto IA (%)" v={k.auto} to="/base-de-connaissance" s={{ onglet: "regles" }} />
         <KPI label="Satisfaction /5" v={Math.round(k.rating * 10) / 10} to="/" />
         <KPI label="Produits actifs" v={db.products.filter((p) => p.status === "Actif").length} to="/produits" />
       </div>
@@ -141,7 +140,7 @@ function Dashboard() {
         </Card>
         <Card>
           <div className="mb-3 flex items-center justify-between"><h3 className="font-display text-lg font-semibold">Activité</h3><button className="text-xs font-semibold text-brand" onClick={() => setAllAct(true)}>Voir tout</button></div>
-          <ul className="space-y-3">{db.activity.slice(0, 6).map((a) => <li key={a.id} className="text-sm"><div className="flex items-center gap-2">{a.actor.startsWith("Agent") ? <AgentBadge agent={a.actor} /> : <span className="text-xs font-semibold">{a.actor}</span>}<span className="text-xs text-muted-foreground">{dateTimeFr(a.at)}</span></div><p className="mt-0.5">{a.text}</p></li>)}</ul>
+          <ul className="space-y-3">{db.activity.slice(0, 6).map((a) => <li key={a.id} className="text-sm"><div className="flex items-center gap-2">{<span className="text-xs font-semibold">{a.actor}</span>}<span className="text-xs text-muted-foreground">{dateTimeFr(a.at)}</span></div><p className="mt-0.5">{a.text}</p></li>)}</ul>
         </Card>
       </div>
 
@@ -170,7 +169,7 @@ function Dashboard() {
       <Sheet open={allAct} onOpenChange={setAllAct}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
           <SheetHeader><SheetTitle className="font-display">Journal d'activité</SheetTitle></SheetHeader>
-          <div className="flex flex-wrap gap-1 px-4">{["", "Commandes", "Stock", "Prix", "Livraisons", "SAV", "Agents", "Import"].map((f) => <button key={f} onClick={() => setActFilter(f)} className={cn("rounded-full border px-2.5 py-1 text-xs font-semibold", actFilter === f && "border-brand bg-accent text-accent-foreground")}>{f || "Tout"}</button>)}</div>
+          <div className="flex flex-wrap gap-1 px-4">{["", "Commandes", "Stock", "Prix", "Livraisons", "SAV", "Messages", "Import"].map((f) => <button key={f} onClick={() => setActFilter(f)} className={cn("rounded-full border px-2.5 py-1 text-xs font-semibold", actFilter === f && "border-brand bg-accent text-accent-foreground")}>{f || "Tout"}</button>)}</div>
           <ul className="space-y-3 p-4">{acts.map((a) => <li key={a.id} className="border-b pb-2 text-sm"><div className="flex items-center gap-2 text-xs"><b>{a.actor}</b><span className="text-muted-foreground">{dateTimeFr(a.at)} · {a.kind}</span></div>{a.text}</li>)}</ul>
         </SheetContent>
       </Sheet>
