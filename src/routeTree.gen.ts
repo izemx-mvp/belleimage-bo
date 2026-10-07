@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CommandesIndexRouteImport } from './routes/commandes.index'
+import { Route as CommandesIdRouteImport } from './routes/commandes.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,34 +29,43 @@ const CommandesIndexRoute = CommandesIndexRouteImport.update({
   path: '/commandes/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CommandesIdRoute = CommandesIdRouteImport.update({
+  id: '/commandes/$id',
+  path: '/commandes/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/commandes/$id': typeof CommandesIdRoute
   '/commandes/': typeof CommandesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/commandes/$id': typeof CommandesIdRoute
   '/commandes': typeof CommandesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/commandes/$id': typeof CommandesIdRoute
   '/commandes/': typeof CommandesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/commandes/'
+  fullPaths: '/' | '/login' | '/commandes/$id' | '/commandes/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/commandes'
-  id: '__root__' | '/' | '/login' | '/commandes/'
+  to: '/' | '/login' | '/commandes/$id' | '/commandes'
+  id: '__root__' | '/' | '/login' | '/commandes/$id' | '/commandes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
+  CommandesIdRoute: typeof CommandesIdRoute
   CommandesIndexRoute: typeof CommandesIndexRoute
 }
 
@@ -82,12 +92,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommandesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/commandes/$id': {
+      id: '/commandes/$id'
+      path: '/commandes/$id'
+      fullPath: '/commandes/$id'
+      preLoaderRoute: typeof CommandesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
+  CommandesIdRoute: CommandesIdRoute,
   CommandesIndexRoute: CommandesIndexRoute,
 }
 export const routeTree = rootRouteImport
