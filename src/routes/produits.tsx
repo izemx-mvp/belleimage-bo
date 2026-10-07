@@ -43,7 +43,7 @@ function Catalogue({ openId }: { openId?: string }) {
   const [edit, setEdit] = useState<Product | null>(null); const [cards, setCards] = useState(false);
   const now = nowMs(db);
   useEffect(() => { if (openId) setEdit(db.products.find((p) => p.id === openId) ?? null); }, [openId]); // eslint-disable-line
-  const blank = (): Product => ({ id: `p${Date.now()}`, ref: "", name: "", nameAr: "", brand: "Samsung", category: "Électroménager", sub: "Réfrigérateurs", price: 0, stock: 0, threshold: 3, location: "Magasin", status: "Brouillon", agentVisible: false, warrantyMonths: 24, description: "", deliveryDays: 2 });
+  const blank = (): Product => ({ id: `p${Date.now()}`, ref: "", name: "", nameAr: "", brand: "Samsung", category: "Électroménager", sub: "Réfrigérateurs", price: 0, stock: 0, threshold: 3, location: "Magasin", status: "Brouillon", warrantyMonths: 24, description: "", deliveryDays: 2 });
   return (
     <>
       <DataTable rows={db.products} exportName="catalogue" onRow={setEdit}
@@ -131,7 +131,7 @@ function ProductEditor({ p, onClose }: { p: Product | null; onClose: () => void 
           <div className="flex gap-2">
             <Button onClick={submit}>Enregistrer</Button>
             <Button variant="outline" onClick={() => setF({ ...f, id: `p${Date.now()}`, ref: f.ref + "-COPIE", status: "Brouillon" })}>Dupliquer</Button>
-            <Button variant="outline" onClick={() => { const r = save({ ...f, status: "Archivé", agentVisible: false }); r.ok ? (toast.success("Produit archivé"), onClose()) : toast.error(r.error); }}>Archiver</Button>
+            <Button variant="outline" onClick={() => { const r = save({ ...f, status: "Archivé" }); r.ok ? (toast.success("Produit archivé"), onClose()) : toast.error(r.error); }}>Archiver</Button>
           </div>
         </div>
       </SheetContent>

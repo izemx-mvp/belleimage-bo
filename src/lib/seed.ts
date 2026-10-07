@@ -143,7 +143,7 @@ export function buildSeed(now = Date.now()) {
     return {
       id: `p${i + 1}`, ref, name, nameAr: AR_NAMES[sub], brand, category: cat, sub, price,
       stock, threshold: LOW_IDX.includes(i) ? 3 : 3, location: i % 3 === 0 ? "Dépôt" : "Magasin",
-      status: i === 59 ? "Brouillon" : i === 57 ? "Archivé" : "Actif", agentVisible: i !== 59,
+      status: i === 59 ? "Brouillon" : i === 57 ? "Archivé" : "Actif",
       warrantyMonths: cat === "Ameublement" ? 12 : w,
       description: `${name} — garantie constructeur, livraison à domicile, paiement à la livraison.`,
       purchasePrice: Math.round(price * 0.78), deliveryDays: cat === "Ameublement" ? 5 : 2,
@@ -197,16 +197,16 @@ export function buildSeed(now = Date.now()) {
     const sub = lines.reduce((s, l) => s + l.qty * l.unitPrice, 0);
     const fee = feeFor(c, sub, ZONES) ?? 0;
     const num = `CMD-2026-${String(104 + n).padStart(4, "0")}`;
-    const fromAgent = pl.s === "Nouvelle" && n === 0;
-    const src = fromAgent || n % 4 === 2 ? "WhatsApp" : n % 4 === 1 ? "Téléphone" : "Magasin";
+    const fromWhatsApp = pl.s === "Nouvelle" && n === 0;
+    const src = fromWhatsApp || n % 4 === 2 ? "WhatsApp" : n % 4 === 1 ? "Téléphone" : "Magasin";
     const created = at(pl.d, 10 + (n % 8), (n * 13) % 60);
     const o: Order = {
       id: `o${n + 1}`, num, clientId: c.id, lines, fee, status: pl.s, source: src,
       mode: n % 9 === 5 ? "Retrait en magasin" : "Livraison à domicile", createdAt: created,
-      missing: fromAgent ? ["adresse"] : [], notes: "", owner: src === "WhatsApp" ? "Équipe commerciale" : ["Salma", "Nabil", "Houda"][n % 3],
+      missing: fromWhatsApp ? ["adresse"] : [], notes: "", owner: src === "WhatsApp" ? "Équipe commerciale" : ["Salma", "Nabil", "Houda"][n % 3],
       history: [{ at: created, text: "Commande créée", actor: src === "WhatsApp" ? "Équipe commerciale" : "Nabil" }],
       cancelReason: pl.s === "Annulée" ? "Client a changé d'avis" : undefined,
-      transcriptId: fromAgent ? "t1" : undefined,
+      transcriptId: fromWhatsApp ? "t1" : undefined,
     };
     if (o.mode === "Retrait en magasin" && pl.del) o.mode = "Livraison à domicile";
     orders.push(o);
@@ -238,21 +238,21 @@ export function buildSeed(now = Date.now()) {
   const transcripts: Transcript[] = [
     { id: "t1", title: "Demande de commande — Réfrigérateur", clientName: clients[0].name, phone: clients[0].phone, messages: [
       { from: "client", text: "Salam, chhal taman dyal frigo Samsung RT38 ?", at: at(0, 9, 12) },
-      { from: "agent", text: "Bonjour Karim 👋 Le réfrigérateur Samsung RT38 Inox 380 L est à 5 990,00 DH TTC, disponible en magasin. Livraison à domicile, paiement à la livraison uniquement.", at: at(0, 9, 12) },
+      { from: "team", text: "Bonjour Karim 👋 Le réfrigérateur Samsung RT38 Inox 380 L est à 5 990,00 DH TTC, disponible en magasin. Livraison à domicile, paiement à la livraison uniquement.", at: at(0, 9, 12) },
       { from: "client", text: "Mezyan, bghit ncommandih. Livraison l Maamora ?", at: at(0, 9, 14) },
-      { from: "agent", text: "Avec plaisir. Maamora est en zone périphérie. J'ai préparé votre demande de commande, un conseiller Belle Image va la confirmer. Pouvez-vous m'indiquer votre adresse exacte ?", at: at(0, 9, 14), buttons: ["Envoyer ma position", "Parler à un conseiller"] },
+      { from: "team", text: "Avec plaisir. Maamora est en zone périphérie. J'ai préparé votre demande de commande, un conseiller Belle Image va la confirmer. Pouvez-vous m'indiquer votre adresse exacte ?", at: at(0, 9, 14), buttons: ["Envoyer ma position", "Parler à un conseiller"] },
     ] },
     { id: "t2", title: "Réclamation — porte rayée", clientName: clients[1].name, phone: clients[1].phone, messages: [
       { from: "client", text: "Bonjour, le réfrigérateur est arrivé avec la porte rayée.", at: at(1, 18, 2) },
-      { from: "agent", text: "Je suis désolé Sara. Pouvez-vous m'envoyer une photo de la rayure et votre numéro de commande ?", at: at(1, 18, 2) },
+      { from: "team", text: "Je suis désolé Sara. Pouvez-vous m'envoyer une photo de la rayure et votre numéro de commande ?", at: at(1, 18, 2) },
       { from: "client", text: "Voici la photo", at: at(1, 18, 5), image: true },
-      { from: "agent", text: "Merci. Produit livré récemment, il est sous garantie ✓. J'ai créé le ticket et un responsable SAV vous contactera sous 24 h.", at: at(1, 18, 6) },
+      { from: "team", text: "Merci. Produit livré récemment, il est sous garantie ✓. J'ai créé le ticket et un responsable SAV vous contactera sous 24 h.", at: at(1, 18, 6) },
     ] },
     { id: "t3", title: "Admin — modification de prix", clientName: "Salma Berrada (admin)", phone: "+212 6 61 00 00 01", messages: [
       { from: "admin", text: "Passe la TV LG 55 pouces à 5 990 DH", at: at(3, 11, 0) },
-      { from: "agent", text: "TV LG OLED 55\" C3 4K (LG-OLED55-C3) : 6 490,00 DH → 5 990,00 DH (−7,7 %). Confirmez-vous ? Répondez OUI dans les 5 minutes.", at: at(3, 11, 0), buttons: ["OUI", "NON"] },
+      { from: "team", text: "TV LG OLED 55\" C3 4K (LG-OLED55-C3) : 6 490,00 DH → 5 990,00 DH (−7,7 %). Confirmez-vous ? Répondez OUI dans les 5 minutes.", at: at(3, 11, 0), buttons: ["OUI", "NON"] },
       { from: "admin", text: "OUI", at: at(3, 11, 1) },
-      { from: "agent", text: "✓ Prix appliqué. Historique mis à jour, modification annulable depuis le back-office.", at: at(3, 11, 1) },
+      { from: "team", text: "✓ Prix appliqué. Historique mis à jour, modification annulable depuis le back-office.", at: at(3, 11, 1) },
     ] },
   ];
 
@@ -273,7 +273,7 @@ export function buildSeed(now = Date.now()) {
       interventionDate: st === "Intervention planifiée" ? dateOnly(-2) : undefined, solution: st === "Clôturée" || st === "Résolue" ? "Réparation" : undefined,
       humanInCharge: false, messages: i === 0 ? transcripts[1].messages : [
         { from: "client", text: `Bonjour, j'ai un souci avec ${p.name}.`, at: created },
-        { from: "agent", text: "Merci pour votre message. Pouvez-vous décrire le problème et envoyer une photo ?", at: created },
+        { from: "team", text: "Merci pour votre message. Pouvez-vous décrire le problème et envoyer une photo ?", at: created },
       ], photos: i % 2 === 0 ? 1 : 0, notes: "", owner: "Houda (SAV)", refuseReason: st.startsWith("Refusée") ? "Garantie expirée" : undefined,
     };
   });
@@ -364,12 +364,8 @@ export function buildSeed(now = Date.now()) {
       address: "Rue 9, Magasin 141, Khabazate, Kénitra", phone: "+212 5 37 36 40 33", whatsapp: "+212 6 61 00 00 00", email: "contact@belleimage.ma",
       socials: [{ name: "Facebook", url: "https://www.facebook.com/Belleimagekenitra" }, { name: "Instagram", url: "https://www.instagram.com/belleimagekenitra" }, { name: "WhatsApp", url: "https://wa.me/212661000000" }],
       adminNumbers: ["+212 6 61 00 00 01"], varThreshold: 30, confirmMinutes: 5, capacity: 4,
-      agents: {
-        "Équipe commerciale": { active: true, paused: false, tone: "chaleureux", allowOrders: true, showPromo: true, showStock: true },
-        "Équipe SAV": { active: true, paused: false, tone: "professionnel", autoTickets: true, checkWarranty: true, lowRatingTicket: true },
-        "Administration": { active: true, paused: false, tone: "concis" },
-      } as Record<string, { active: boolean; paused: boolean; tone: string; [k: string]: unknown }>,
-      demoEvents: true, reduceMotion: false,
+      lowRatingTicket: true,
+      demoEvents: false, reduceMotion: false,
     },
     demoStep: 0, dayOffset: 0, seededAt: iso(now),
   };

@@ -20,23 +20,6 @@ export const Route = createFileRoute("/base-de-connaissance")({
   component: KB,
 });
 
-const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-export function answer(db: DB, q: string): { text: string; source: string } {
-  const n = norm(q); const now = nowMs(db);
-  if (/carte bancaire|cvv|numero de carte|payer en ligne/.test(n) && /donne|voici|mon numero/.test(n)) return { text: "Pour votre sécurité, nous ne demandons jamais de données bancaires. Le paiement se fait uniquement à la livraison.", source: "Garde-fou n°7" };
-  const words = n.split(/\W+/).filter((w) => w.length > 2);
-  const prod = db.products.filter((p) => p.status === "Actif" && p.agentVisible).map((p) => ({ p, s: words.filter((w) => norm(`${p.name} ${p.brand} ${p.ref}`).includes(w)).length })).sort((a, b) => b.s - a.s)[0];
-  if (prod && prod.s >= 2) {
-    const a = availableOf(db, prod.p);
-    return { text: `${prod.p.name} : ${dh(effectivePrice(prod.p, now))} TTC — ${a <= 0 ? "indisponible pour le moment" : a <= prod.p.threshold ? "bientôt épuisé" : "disponible"}. Garantie ${prod.p.warrantyMonths} mois. Paiement à la livraison.`, source: `Catalogue › ${prod.p.ref} (prix et stock en temps réel)` };
-  }
-  if (/livraison|livrez|frais/.test(n)) { const city = db.clients.find((c) => n.includes(norm(c.quartier)) || n.includes(norm(c.city))); if (city) { const f = feeFor(city, 0, db.zones); return { text: `Livraison vers ${city.quartier} (${city.city}) : ${f === null ? "sur devis" : dh(f)}${city.city === "Kénitra" && db.zones[0].freeFrom ? `, gratuite dès ${dh(db.zones[0].freeFrom)} en centre-ville` : ""}.`, source: "Livraisons › Zones" }; } }
-  const faq = db.faqs.filter((f) => f.active).map((f) => ({ f, s: words.filter((w) => norm(f.q + " " + f.a).includes(w)).length })).sort((a, b) => b.s - a.s)[0];
-  if (faq && faq.s > 0) return { text: faq.f.a, source: `FAQ › ${faq.f.cat} › ${faq.f.q}` };
-  if (/horaire|ouvert|heure/.test(n)) return { text: `Ouvert ${db.settings.hours[0].open}–${db.settings.hours[0].close}, 7j/7.`, source: "Infos générales › Horaires" };
-  return { text: "Je n'ai pas cette information. Je vous mets en relation avec un conseiller Belle Image.", source: "Aucune source — transfert à un humain (garde-fou n°1)" };
-}
-
 function KB() {
   const s = Route.useSearch(); const nav = useNavigate({ from: "/base-de-connaissance" });
   const tab = s.onglet ?? "faq";
