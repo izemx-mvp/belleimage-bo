@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import {
   Refrigerator, WashingMachine, CookingPot, Tv, AirVent, Blend, Sofa, BedDouble, UtensilsCrossed, Archive,
-  CircleDot, CheckCircle2, Package, PackageCheck, Truck, BadgeCheck, XCircle, Undo2, Clock, AlertTriangle, Wrench, CalendarClock, Lock, Banknote, Ban, Bot,
+   CircleDot, CheckCircle2, Package, PackageCheck, Truck, BadgeCheck, XCircle, Undo2, Clock, AlertTriangle, Wrench, CalendarClock, Lock, Banknote, Ban,
 } from "lucide-react";
 import type { Product, Sub } from "@/lib/types";
 import logoAsset from "@/assets/belle-image-logo.png.asset.json";
@@ -23,14 +23,14 @@ const SUB_ICON: Record<Sub, typeof Tv> = {
 };
 
 export function ProductThumb({ p, className, square }: { p: Product; className?: string; square?: boolean }) {
-  const srcs = [`/products/${p.ref.toLowerCase()}.jpg`, p.imageUrl].filter(Boolean) as string[];
+   const srcs = [p.imageUrl, `/products/${p.ref.toLowerCase()}.jpg`].filter((src): src is string => Boolean(src));
   const [i, setI] = useState(0);
   const Icon = SUB_ICON[p.sub];
   const fallback = i >= srcs.length;
   return (
     <div className={cn("relative overflow-hidden rounded-lg bg-accent", square ? "aspect-square" : "aspect-[4/3]", className)}>
       {!fallback ? (
-        <img src={srcs[i]} alt={p.name} loading="lazy" className="h-full w-full object-cover" onError={() => setI(i + 1)} />
+         <img src={srcs[i]} alt={p.name} loading="lazy" className="h-full w-full object-contain bg-card" onError={() => setI((current) => current + 1)} />
       ) : (
         <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-brand/70">
           <Icon strokeWidth={1.25} className="h-1/2 w-1/2 max-h-16 max-w-16" />

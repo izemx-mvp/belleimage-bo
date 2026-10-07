@@ -1,4 +1,3 @@
-export type Agent = "Équipe commerciale" | "Équipe SAV" | "Administration";
 export type Sub =
   | "Réfrigérateurs" | "Lave-linge" | "Cuisson" | "TV & image" | "Climatisation" | "Petit électroménager"
   | "Salons" | "Chambres" | "Salles à manger" | "Rangement";
@@ -8,7 +7,7 @@ export interface Product {
   id: string; ref: string; name: string; nameAr: string; brand: string; category: Category; sub: Sub;
   price: number; promo?: { price: number; start: string; end: string };
   stock: number; threshold: number; location: "Magasin" | "Dépôt";
-  status: "Actif" | "Brouillon" | "Archivé"; agentVisible: boolean; warrantyMonths: number;
+  status: "Actif" | "Brouillon" | "Archivé"; warrantyMonths: number;
   description: string; imageUrl?: string; purchasePrice?: number; deliveryDays: number;
 }
 export interface Client { id: string; name: string; phone: string; city: string; quartier: string; address: string; landmark?: string; lang: "FR" | "AR" }
@@ -28,7 +27,7 @@ export interface Payment { id: string; num: string; orderId: string; driverId: s
 export interface Driver { id: string; name: string; phone: string; vehicle: string; status: "Disponible" | "En tournée" | "Absent" }
 export interface Zone { id: string; name: string; fee: number | null; freeFrom?: number; cities: string[] }
 export type TicketStatus = "Nouvelle" | "En analyse" | "Technicien assigné" | "Intervention planifiée" | "Résolue" | "Clôturée" | "Refusée — hors garantie";
-export interface Msg { from: "client" | "agent" | "human" | "admin"; text: string; at: string; image?: boolean; buttons?: string[] }
+export interface Msg { from: "client" | "team" | "human" | "admin"; text: string; at: string; image?: boolean; buttons?: string[] }
 export interface Ticket {
   id: string; num: string; clientId: string; orderId?: string; productId: string; type: string; status: TicketStatus;
   priority: "Basse" | "Normale" | "Haute"; createdAt: string; source: string; summary: string; description: string;

@@ -46,7 +46,7 @@ function Sav() {
               <div key={t.id} draggable onDragStart={(e) => e.dataTransfer.setData("id", t.id)} onClick={() => open(t)} className="cursor-grab rounded-xl border bg-card p-3 text-sm shadow-soft card-lift">
                 <div className="flex justify-between"><b>{t.num}</b><span className={cn("text-xs", age(t) > 4 && !["Clôturée", "Résolue"].includes(t.status) ? "font-bold text-brand" : "text-muted-foreground")}>{age(t)} j</span></div>
                 <ClientLink id={t.clientId} /><div className="text-xs text-muted-foreground">{pn(t).name} · {pn(t).brand}</div>
-                <div className="mt-2 flex flex-wrap gap-1"><Pill>{t.type}</Pill><WarrantyPill t={t} />{t.source.includes("Agent") && <SourceBadge source="Équipe SAV" />}{t.source.startsWith("Avis") && <Pill tone="warning">Avis ≤ 2/5</Pill>}</div>
+                 <div className="mt-2 flex flex-wrap gap-1"><Pill>{t.type}</Pill><WarrantyPill t={t} />{t.source.startsWith("Avis") && <Pill tone="warning">Avis ≤ 2/5</Pill>}</div>
               </div>))}</div>
           </div>); })}</div>
       ) : (

@@ -37,7 +37,7 @@ function TicketPage() {
   return (
     <div className="space-y-6">
       <Link to="/sav" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" />Réclamations</Link>
-      <div className="flex flex-wrap items-center gap-2"><h1 className="font-display text-4xl font-semibold">{t.num}</h1><StatusBadge s={t.status} />{t.source.includes("Agent") && <SourceBadge source="Équipe SAV" />}{t.humanInCharge && <Pill tone="ink"><Hand className="h-3 w-3" />Humain en charge</Pill>}</div>
+       <div className="flex flex-wrap items-center gap-2"><h1 className="font-display text-4xl font-semibold">{t.num}</h1><StatusBadge s={t.status} />{t.humanInCharge && <Pill tone="ink"><Hand className="h-3 w-3" />Responsable assigné</Pill>}</div>
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
         <div className="space-y-6">
           <Card className="border-brand/20 bg-accent/30"><div className="mb-1 text-xs font-bold uppercase text-brand">Résumé</div><p>{t.summary}</p></Card>
@@ -70,7 +70,7 @@ function TicketPage() {
             {t.refuseReason && <p className="text-brand">Motif de refus : {t.refuseReason}</p>}
             <Button variant="outline" size="sm" onClick={() => simplePdf("FICHE D'INTERVENTION", [`Ticket : ${t.num}`, `Client : ${c.name} — ${c.phone}`, `Adresse : ${c.address}, ${c.quartier}, ${c.city}`, `Produit : ${p.name} (${p.brand})`, `Type : ${t.type}`, `Garantie : ${w.state === "ok" ? "couverte" : w.state === "expired" ? "expirée" : "à vérifier"}`, `Technicien : ${t.technician ?? "—"}`, `Date : ${t.interventionDate ? dateFr(t.interventionDate) : "—"}`, `Description : ${t.description}`], `intervention-${t.num}.pdf`)}><FileText className="h-3 w-3" />Fiche d'intervention PDF</Button>
           </Card>
-          <Card className="text-sm"><h3 className="mb-2 font-display font-semibold">Chronologie</h3><ul className="space-y-1 border-l-2 border-brand/30 pl-3 text-xs">{t.messages.map((m, i) => <li key={i}>{dateTimeFr(m.at)} — {m.from === "agent" ? "Équipe SAV" : m.from === "human" ? "Équipe" : "Client"}</li>)}<li>{dateTimeFr(t.createdAt)} — Ticket créé ({t.source})</li></ul></Card>
+           <Card className="text-sm"><h3 className="mb-2 font-display font-semibold">Chronologie</h3><ul className="space-y-1 border-l-2 border-brand/30 pl-3 text-xs">{t.messages.map((m, i) => <li key={i}>{dateTimeFr(m.at)} — {m.from === "team" || m.from === "human" ? "Équipe" : "Client"}</li>)}<li>{dateTimeFr(t.createdAt)} — Ticket créé ({t.source})</li></ul></Card>
         </div>
       </div>
     </div>
