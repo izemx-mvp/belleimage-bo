@@ -28,7 +28,7 @@ const NAV = [
 export function AppShell({ children }: { children: ReactNode }) {
   const db = useStore((s) => s.db);
   const pulse = useStore((s) => s.pulse);
-  const { logout, reset, mut, readAllNotifs, runDemoStep } = useStore.getState();
+   const { logout, reset, mut, readAllNotifs } = useStore.getState();
   const nav = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const [collapsed, setCollapsed] = useState(false);
