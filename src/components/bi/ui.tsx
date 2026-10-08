@@ -4,10 +4,10 @@ import {
    CircleDot, CheckCircle2, Package, PackageCheck, Truck, BadgeCheck, XCircle, Undo2, Clock, AlertTriangle, Wrench, CalendarClock, Lock, Banknote, Ban,
 } from "lucide-react";
 import type { Product, Sub } from "@/lib/types";
-import logoAsset from "@/assets/belle-image-logo.png.asset.json";
+import logoUrl from "@/assets/belle-image-logo";
 import { cn } from "@/lib/utils";
 
-export const LOGO_URL = logoAsset.url;
+export const LOGO_URL = logoUrl;
 export const SHOWROOM_URL = "https://belleimage.izemxlab.com/assets/showroom-1-DppMc5qv.png";
 
 export function Logo({ light, className }: { light?: boolean; className?: string }) {
